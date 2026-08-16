@@ -4,6 +4,7 @@ import LessonPage from '../components/lesson/LessonPage'
 import ConceptFlow, { type FlowStep } from '../components/lesson/ConceptFlow'
 import { buildEvidences } from '../components/KnowledgeGraphPage'
 import { lessonById } from '../course/lessons'
+import { quizByLesson } from '../course/quizzes'
 import Graph from '../components/Graph'
 import NodeDrawer from '../components/NodeDrawer'
 import { useState } from 'react'
@@ -62,6 +63,7 @@ export default function AgentLoopPage() {
       flow={{ steps: loopFlow, title: '一轮执行动态图', hint: '点击节点查看讲解与对应源码', interactive: true }}
       concepts={agentloop.concepts}
       evidences={buildEvidences(agentloop)}
+      quiz={quizByLesson('agent-loop')}
     >
       <div className="section-title">
         <h2>⏱ 时序图</h2>

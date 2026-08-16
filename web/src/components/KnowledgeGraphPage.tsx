@@ -10,6 +10,7 @@ import { useData } from '../data'
 import { useState } from 'react'
 import NodeDrawer from './NodeDrawer'
 import LessonPage, { type LessonContent } from './lesson/LessonPage'
+import { quizByLesson } from '../course/quizzes'
 import type { Evidence } from './lesson/SourceEvidence'
 
 interface Props {
@@ -140,6 +141,7 @@ export default function KnowledgeGraphPage({ content, graphTitle, lesson }: Prop
     objectives: content.learn,
     concepts: content.concepts,
     evidences: buildEvidences(content),
+    quiz: quizByLesson(lesson.id),
   }
 
   return (
