@@ -1,11 +1,14 @@
 import { useMemo, useState } from 'react'
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom'
-import { Search, Sun, Moon } from 'lucide-react'
+import { Search, Sun, Moon, Menu, X } from 'lucide-react'
 import { SECTIONS, pageByRoute } from './content/pages'
+import { lessonById } from './course/lessons'
 import { useTheme } from './theme'
 import { useData } from './data'
+import { useProgress } from './course/useProgress'
 import type { IndexFile, PkgRecord, DocRecord } from './types'
 
+import HomePage from './pages/HomePage'
 import OverviewPage from './pages/OverviewPage'
 import CordisPage from './pages/CordisPage'
 import ProfilePage from './pages/ProfilePage'
@@ -28,8 +31,10 @@ export default function App() {
   const { meta, files, packages, docs } = useData()
   const location = useLocation()
   const navigate = useNavigate()
+  const { progress, completedCount, percent, isCompleted, uiMode, setUiMode } = useProgress()
   const [q, setQ] = useState('')
   const [results, setResults] = useState<{ files: IndexFile[]; packages: PkgRecord[]; docs: DocRecord[] } | null>(null)
+  const [drawerOpen, setDrawerOpen] = useState(false)
 
   const current = pageByRoute(location.pathname)
 
@@ -52,54 +57,82 @@ export default function App() {
     return meta.repoCommit.slice(0, 7)
   }, [meta])
 
+  const go = (route: string) => {
+    navigate(route)
+    setDrawerOpen(false)
+  }
+
   return (
     <div className="app-shell">
-      <aside className="sidebar">
+      {/* 移动端遮罩 */}
+      {drawerOpen && <div className="drawer-mask" onClick={() => setDrawerOpen(false)} />}
+
+      <aside className={`sidebar ${drawerOpen ? 'open' : ''}`}>
         <div className="sidebar-brand">
           <div className="logo">⚡</div>
           <div>
             <div className="name">Harness Learning Lab</div>
             <div className="sub">源码驱动的学习地图</div>
           </div>
+          {drawerOpen && (
+            <button className="icon-btn drawer-close" onClick={() => setDrawerOpen(false)}>
+              <X size={16} />
+            </button>
+          )}
         </div>
+
+        {uiMode === 'learning' && (
+          <div className="sidebar-progress">
+            <div className="sp-label">学习进度</div>
+            <div className="sp-bar"><div className="sp-fill" style={{ width: `${percent}%` }} /></div>
+            <div className="sp-meta">{completedCount} / 12 · {percent}%</div>
+          </div>
+        )}
+
         <nav className="sidebar-nav">
           {SECTIONS.map((sec) => (
             <div key={sec.title}>
               <div className="nav-section">{sec.title}</div>
-              {sec.pages.map((p) => (
-                <a
-                  key={p.id}
-                  href={p.route}
-                  onClick={(e) => {
-                    e.preventDefault()
-                    navigate(p.route)
-                  }}
-                  className={`nav-item ${location.pathname === p.route ? 'active' : ''}`}
-                >
-                  <span className="ic">{p.emoji}</span>
-                  <span>{p.navTitle}</span>
-                </a>
-              ))}
+              {sec.pages.map((p) => {
+                const lesson = p.lessonId ? lessonById(p.lessonId) : undefined
+                const done = p.lessonId ? isCompleted(p.lessonId) : false
+                const isCurrent = location.pathname === p.route
+                return (
+                  <a
+                    key={p.id}
+                    href={p.route}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      go(p.route)
+                    }}
+                    className={`nav-item ${isCurrent ? 'active' : ''} ${p.lessonId ? 'lesson' : 'ref'} ${done ? 'done' : ''}`}
+                  >
+                    {p.lessonId && lesson && (
+                      <span className="num">{String(lesson.order).padStart(2, '0')}</span>
+                    )}
+                    {!p.lessonId && <span className="ic">{p.emoji}</span>}
+                    <span className="nav-label">{p.navTitle}</span>
+                    {p.lessonId && (done ? <span className="st done">✓</span> : isCurrent ? <span className="st cur">●</span> : <span className="st" />)}
+                  </a>
+                )
+              })}
             </div>
           ))}
         </nav>
+
         <div className="sidebar-foot">
-          {gitLabel ? (
-            <span>
-              <span className="dot" />
-              {meta?.repo} @ {gitLabel}
-            </span>
-          ) : (
-            <span>
-              <span className="dot" />
-              {meta?.repo ?? 'deepseek-harness'}
-            </span>
-          )}
+          <span className="snapshot">
+            <span className="dot" />
+            Harness Snapshot {gitLabel ?? meta?.repo ?? 'deepseek-harness'}
+          </span>
         </div>
       </aside>
 
       <div className="main">
         <header className="topbar">
+          <button className="icon-btn menu-btn" onClick={() => setDrawerOpen(true)}>
+            <Menu size={16} />
+          </button>
           <div className="crumb">
             {current ? (
               <>
@@ -112,6 +145,24 @@ export default function App() {
             )}
           </div>
           <div className="spacer" />
+          <div className="mode-switch" role="tablist" aria-label="界面模式">
+            <button
+              role="tab"
+              aria-selected={uiMode === 'learning'}
+              className={uiMode === 'learning' ? 'active' : ''}
+              onClick={() => setUiMode('learning')}
+            >
+              学习模式
+            </button>
+            <button
+              role="tab"
+              aria-selected={uiMode === 'developer'}
+              className={uiMode === 'developer' ? 'active' : ''}
+              onClick={() => setUiMode('developer')}
+            >
+              开发模式
+            </button>
+          </div>
           <div className="search-wrap">
             <span className="si"><Search size={15} /></span>
             <input
@@ -123,19 +174,19 @@ export default function App() {
             {results && (
               <div className="search-results">
                 {results.files.slice(0, 12).map((f) => (
-                  <div key={'f' + f.source_path} className="sr-item" onMouseDown={() => navigate(`/source?path=${encodeURIComponent(f.source_path)}`)}>
+                  <div key={'f' + f.source_path} className="sr-item" onMouseDown={() => go(`/source?path=${encodeURIComponent(f.source_path)}`)}>
                     <span className="badge info sr-kind">源码</span>
                     <span className="sr-path">{f.source_path}</span>
                   </div>
                 ))}
                 {results.packages.slice(0, 8).map((p) => (
-                  <div key={'p' + p.dir} className="sr-item" onMouseDown={() => navigate(`/packages?dir=${encodeURIComponent(p.dir)}`)}>
+                  <div key={'p' + p.dir} className="sr-item" onMouseDown={() => go(`/packages?dir=${encodeURIComponent(p.dir)}`)}>
                     <span className="badge accent sr-kind">包</span>
                     <span className="sr-path">{p.name}</span>
                   </div>
                 ))}
                 {results.docs.slice(0, 8).map((d) => (
-                  <div key={'d' + d.source_path} className="sr-item" onMouseDown={() => navigate(`/source?path=${encodeURIComponent(d.source_path)}`)}>
+                  <div key={'d' + d.source_path} className="sr-item" onMouseDown={() => go(`/source?path=${encodeURIComponent(d.source_path)}`)}>
                     <span className="badge success sr-kind">文档</span>
                     <span className="sr-path">{d.source_path}</span>
                   </div>
@@ -153,7 +204,8 @@ export default function App() {
 
         <div className="content">
           <Routes>
-            <Route path="/" element={<OverviewPage />} />
+            <Route path="/" element={<HomePage />} />
+            <Route path="/overview" element={<OverviewPage />} />
             <Route path="/cordis" element={<CordisPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/agent-loop" element={<AgentLoopPage />} />

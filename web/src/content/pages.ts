@@ -1,5 +1,6 @@
 // ---------------------------------------------------------------------------
 // 页面注册表：导航结构 + 学习路线
+// V0.2：课程(12) / 开发者参考 分组；/ = HomePage，/overview = Lesson 1
 // ---------------------------------------------------------------------------
 
 export interface PageMeta {
@@ -9,6 +10,8 @@ export interface PageMeta {
   title: string
   navTitle: string
   subtitle: string
+  /** 若为课程页，指向 course lesson id（用于 ✓/● 状态与进度） */
+  lessonId?: string
 }
 
 export interface NavSection {
@@ -18,43 +21,29 @@ export interface NavSection {
 
 export const SECTIONS: NavSection[] = [
   {
-    title: '入门',
+    title: '课程',
     pages: [
-      { id: 'overview', route: '/', emoji: '🏠', title: 'Harness 全景', navTitle: '全景', subtitle: 'Harness 到底由什么组成' },
-      { id: 'cordis', route: '/cordis', emoji: '🧩', title: '插件架构', navTitle: '插件架构', subtitle: 'Cordis、Plugin、ctx 如何组合' },
-      { id: 'profile', route: '/profile', emoji: '🧬', title: 'Profile / Bundle', navTitle: 'Profile/Bundle', subtitle: '如何把插件组装成可运行实例' },
+      { id: 'overview', route: '/overview', emoji: '🏠', title: 'Harness 是什么', navTitle: 'Harness 是什么', subtitle: 'Harness 到底是什么', lessonId: 'overview' },
+      { id: 'cordis', route: '/cordis', emoji: '🧩', title: 'Everything is a Plugin', navTitle: 'Plugin / Cordis', subtitle: 'Cordis、Plugin、ctx 如何组合', lessonId: 'cordis' },
+      { id: 'profile', route: '/profile', emoji: '🧬', title: 'Profile / Bundle', navTitle: 'Profile / Bundle', subtitle: '如何把插件组装成可运行实例', lessonId: 'profile' },
+      { id: 'agent-loop', route: '/agent-loop', emoji: '🔄', title: 'Agent Loop', navTitle: 'Agent Loop', subtitle: '一次提问的完整生命周期', lessonId: 'agent-loop' },
+      { id: 'session', route: '/session', emoji: '💾', title: 'Session', navTitle: 'Session', subtitle: '事件日志、恢复、审计', lessonId: 'session' },
+      { id: 'tools', route: '/tools', emoji: '🛠', title: 'Tools', navTitle: 'Tools', subtitle: '注册、执行、权限控制', lessonId: 'tools' },
+      { id: 'skills', route: '/skills', emoji: '🧠', title: 'Skills', navTitle: 'Skills', subtitle: 'Provider → Catalog → Loader', lessonId: 'skills' },
+      { id: 'subagent', route: '/subagent', emoji: '🤖', title: 'Subagent', navTitle: 'Subagent', subtitle: '主 Agent 如何创建子 Agent', lessonId: 'subagent' },
+      { id: 'workflow', route: '/workflow', emoji: '⚙️', title: 'Workflow', navTitle: 'Workflow', subtitle: '动态编排多个 Subagent', lessonId: 'workflow' },
+      { id: 'permission', route: '/permission', emoji: '🔐', title: 'Permission / Sandbox', navTitle: 'Permission', subtitle: 'Approval、权限预设、Sandbox', lessonId: 'permission' },
+      { id: 'web-ui', route: '/web-ui', emoji: '🎨', title: 'Web UI / Slots', navTitle: 'Web UI', subtitle: 'React Client 与 UI 插件', lessonId: 'web-ui' },
+      { id: 'plugin-generator', route: '/plugin-generator', emoji: '🧩', title: 'Plugin Generator', navTitle: 'Plugin Generator', subtitle: '在线生成插件模板 · 第 12 课', lessonId: 'plugin-generator' },
     ],
   },
   {
-    title: '核心执行',
-    pages: [
-      { id: 'agentloop', route: '/agent-loop', emoji: '🔄', title: 'Agent Loop', navTitle: 'Agent Loop', subtitle: '一次提问的完整生命周期' },
-      { id: 'session', route: '/session', emoji: '💾', title: 'Session', navTitle: 'Session', subtitle: '事件日志、恢复、审计' },
-      { id: 'tools', route: '/tools', emoji: '🛠', title: 'Tools', navTitle: 'Tools', subtitle: '注册、执行、权限控制' },
-      { id: 'skills', route: '/skills', emoji: '🧠', title: 'Skills', navTitle: 'Skills', subtitle: 'Provider → Catalog → Loader' },
-      { id: 'subagent', route: '/subagent', emoji: '🤖', title: 'Subagent', navTitle: 'Subagent', subtitle: '主 Agent 如何创建子 Agent' },
-      { id: 'workflow', route: '/workflow', emoji: '⚙️', title: 'Workflow', navTitle: 'Workflow', subtitle: '动态编排多个 Subagent' },
-      { id: 'permission', route: '/permission', emoji: '🔐', title: 'Permission / Sandbox', navTitle: '权限与沙箱', subtitle: 'Approval、权限预设、Sandbox' },
-    ],
-  },
-  {
-    title: '前端',
-    pages: [
-      { id: 'webui', route: '/web-ui', emoji: '🎨', title: 'Web UI / Slots', navTitle: 'Web UI / Slots', subtitle: 'React Client 与 UI 插件' },
-    ],
-  },
-  {
-    title: '数据与运行时',
+    title: '开发者参考',
     pages: [
       { id: 'packages', route: '/packages', emoji: '📦', title: 'Packages 总览', navTitle: 'Packages', subtitle: '每一个 package 干什么' },
       { id: 'source', route: '/source', emoji: '📂', title: '源码浏览器', navTitle: '源码浏览器', subtitle: '直接阅读官方源码' },
-      { id: 'live', route: '/live', emoji: '🟢', title: 'Live Harness', navTitle: 'Live Harness', subtitle: '当前机器的实际 Plugin Tree' },
-    ],
-  },
-  {
-    title: '动手',
-    pages: [
-      { id: 'plugingen', route: '/plugin-generator', emoji: '🧩', title: 'Plugin Generator', navTitle: 'Plugin Generator', subtitle: '在线生成插件模板' },
+      { id: 'runtime-snapshot', route: '/runtime-snapshot', emoji: '📸', title: 'Runtime Snapshot', navTitle: 'Runtime Snapshot', subtitle: '构建时保存的静态 Plugin 结构' },
+      { id: 'version', route: '/version', emoji: '🔄', title: '版本差异', navTitle: '版本差异', subtitle: '学习快照 vs 官方 master' },
       { id: 'playground', route: '/playground', emoji: '🧪', title: 'Playground', navTitle: 'Playground', subtitle: '自己写一个 Harness Plugin' },
     ],
   },
@@ -65,19 +54,3 @@ export const ALL_PAGES: PageMeta[] = SECTIONS.flatMap((s) => s.pages)
 export function pageByRoute(route: string): PageMeta | undefined {
   return ALL_PAGES.find((p) => p.route === route)
 }
-
-/** 推荐学习顺序（数字标注） */
-export const LEARN_ORDER: { no: string; pageId: string; tip: string }[] = [
-  { no: '①', pageId: 'overview', tip: '先建立整体心智' },
-  { no: '②', pageId: 'cordis', tip: '一切皆插件' },
-  { no: '③', pageId: 'profile', tip: '如何组装实例' },
-  { no: '④', pageId: 'agentloop', tip: '优先理解执行链路' },
-  { no: '⑤', pageId: 'session', tip: '事件日志 = 单一事实源' },
-  { no: '⑥', pageId: 'tools', tip: '工具执行管线' },
-  { no: '⑦', pageId: 'skills', tip: '能力注入' },
-  { no: '⑧', pageId: 'subagent', tip: '子代理协作' },
-  { no: '⑨', pageId: 'workflow', tip: '多代理编排' },
-  { no: '⑩', pageId: 'permission', tip: '安全与审批' },
-  { no: '⑪', pageId: 'webui', tip: 'UI 插件与 Slots' },
-  { no: '⑫', pageId: 'playground', tip: '动手写插件' },
-]
