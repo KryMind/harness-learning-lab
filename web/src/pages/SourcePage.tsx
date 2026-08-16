@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Folder, FileCode2, ChevronRight, ArrowUp } from 'lucide-react'
-import { api } from '../api'
 import { useData } from '../data'
 import SourceViewer from '../components/SourceViewer'
 
@@ -13,27 +12,33 @@ interface DirItem {
 export default function SourcePage() {
   const [params, setParams] = useSearchParams()
   const current = params.get('path') ?? ''
-  const [items, setItems] = useState<DirItem[] | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
-  const { files } = useData()
+  const { files, loading } = useData()
   const [q, setQ] = useState('')
 
-  useEffect(() => {
-    setItems(null)
-    setError(null)
-    if (!current) return
-    setLoading(true)
-    api
-      .source(current)
-      .then((res) => {
-        if (res.type === 'dir') setItems((res.items ?? []) as DirItem[])
-      })
-      .catch((e) => setError(String(e instanceof Error ? e.message : e)))
-      .finally(() => setLoading(false))
-  }, [current])
+  // 由静态 repo-index 推导目录树，无需 server
+  const items = useMemo<DirItem[] | null>(() => {
+    if (loading) return null
+    const prefix = current ? current + '/' : ''
+    const seen = new Set<string>()
+    const out: DirItem[] = []
+    for (const f of files) {
+      if (!f.source_path.startsWith(prefix)) continue
+      const rest = f.source_path.slice(prefix.length)
+      const idx = rest.indexOf('/')
+      if (idx === -1) {
+        out.push({ name: rest, type: 'file' })
+      } else {
+        const name = rest.slice(0, idx)
+        if (!seen.has(name)) {
+          seen.add(name)
+          out.push({ name, type: 'dir' })
+        }
+      }
+    }
+    return out
+  }, [current, files, loading])
 
-  const isFile = !!current && !current.endsWith('/') && items === null && !loading && !error
+  const isFile = !!current && !current.endsWith('/') && files.some((f) => f.source_path === current)
 
   const segs = current ? current.split('/').filter(Boolean) : []
   const up = segs.slice(0, -1).join('/')
@@ -68,7 +73,7 @@ export default function SourcePage() {
       <div className="search-wrap" style={{ marginBottom: 16 }}>
         <span className="si">🔍</span>
         <input
-          placeholder="在 5462 个文件里检索（如 agent-loop / session / cordis）…"
+          placeholder={`在 ${files.length} 个文件里检索（如 agent-loop / session / cordis）…`}
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />

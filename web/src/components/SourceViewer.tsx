@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Editor from '@monaco-editor/react'
 import { Check, Copy, FileCode2 } from 'lucide-react'
-import { api } from '../api'
+import { loadSourceContent } from '../sources'
 import { useTheme } from '../theme'
 import { useData } from '../data'
 import { KIND_COLOR } from './Graph'
@@ -43,12 +43,11 @@ export default function SourceViewer({ path, height = 420, showHeader = true }: 
     setContent(null)
     setError(null)
     let alive = true
-    api
-      .source(path)
-      .then((res) => {
+    loadSourceContent(path)
+      .then((c) => {
         if (!alive) return
-        if (res.error || res.content === undefined) setError(res.error ?? '无法读取')
-        else setContent(res.content)
+        if (c === null) setError('静态快照中不包含该文件内容')
+        else setContent(c)
       })
       .catch((e) => alive && setError(String(e?.message ?? e)))
     return () => {

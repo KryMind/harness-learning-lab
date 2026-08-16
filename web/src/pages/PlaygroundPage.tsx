@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Editor from '@monaco-editor/react'
 import { CheckCircle2, XCircle, Play, Wand2 } from 'lucide-react'
 import { useTheme } from '../theme'
@@ -38,6 +39,7 @@ const PATCH = `# 把你的插件挂进 profile（cordis.patch.yml 增行示例�
 
 export default function PlaygroundPage() {
   const { theme } = useTheme()
+  const navigate = useNavigate()
   const [code, setCode] = useState(TEMPLATE)
   const [patch, setPatch] = useState(PATCH)
   const [check, setCheck] = useState<null | { ok: boolean; issues: string[] }>(null)
@@ -151,9 +153,9 @@ export default function PlaygroundPage() {
           <div className="card-head"><span className="ic">📚</span><span>官方参考</span></div>
           <p className="card-body">官方 cookbook 的“添加一个工具”教程，以及工具运行时源码。</p>
           <div className="src-list">
-            <button className="src-chip" onClick={() => (window.location.href = '/source?path=docs/cookbook/adding-a-tool.md')}>cookbook/adding-a-tool.md</button>
-            <button className="src-chip" onClick={() => (window.location.href = '/source?path=packages/core/tools/src/types.ts')}>tools/types.ts</button>
-            <button className="src-chip" onClick={() => (window.location.href = '/source?path=packages/core/tools/src/index.ts')}>tools/index.ts</button>
+            <button className="src-chip" onClick={() => navigate('/source?path=docs/cookbook/adding-a-tool.md')}>cookbook/adding-a-tool.md</button>
+            <button className="src-chip" onClick={() => navigate('/source?path=packages/core/tools/src/types.ts')}>tools/types.ts</button>
+            <button className="src-chip" onClick={() => navigate('/source?path=packages/core/tools/src/index.ts')}>tools/index.ts</button>
           </div>
         </div>
       </div>

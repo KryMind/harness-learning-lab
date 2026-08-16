@@ -1,20 +1,17 @@
 {
   "name": "harness-learning-lab",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "description": "Harness Learning Lab —— 源码驱动的 DeepSeek Harness 学习地图（可点击、可追踪、可运行）",
+  "description": "Harness Learning Lab —— 源码驱动的 DeepSeek Harness 学习地图（纯静态站，可部署 GitHub Pages）",
   "type": "module",
   "scripts": {
-    "scan": "tsx scripts/scan.ts",
-    "dev": "concurrently -n server,web -c blue,green \"pnpm --filter @hll/server dev\" \"pnpm --filter @hll/web dev\"",
-    "dev:server": "pnpm --filter @hll/server dev",
-    "dev:web": "pnpm --filter @hll/web dev",
-    "build": "pnpm --filter @hll/web build",
-    "start": "pnpm --filter @hll/server start",
-    "typecheck": "tsc -p server && tsc -p web"
+    "generate": "tsx scripts/scan.ts",
+    "dev": "pnpm --filter @hll/web dev",
+    "build": "pnpm generate && pnpm --filter @hll/web build",
+    "preview": "pnpm --filter @hll/web preview",
+    "typecheck": "tsc -p web"
   },
   "devDependencies": {
-    "concurrently": "^9.1.0",
     "tsx": "^4.19.2",
     "typescript": "^5.6.3"
   },

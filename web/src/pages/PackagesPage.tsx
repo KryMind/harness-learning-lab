@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { X, ExternalLink } from 'lucide-react'
 import { useData } from '../data'
 import SourceViewer from '../components/SourceViewer'
@@ -55,6 +55,7 @@ const FAMILY_LABEL: Record<string, string> = {
 
 export default function PackagesPage() {
   const { packages, stats, loading } = useData()
+  const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
   const selectedDir = params.get('dir') ?? ''
   const [q, setQ] = useState('')
@@ -183,7 +184,7 @@ export default function PackagesPage() {
                     className="src-chip"
                     onClick={() => {
                       setParams({})
-                      window.location.href = `/source?path=${encodeURIComponent(selected.readme!)}`
+                      navigate(`/source?path=${encodeURIComponent(selected.readme!)}`)
                     }}
                   >
                     <ExternalLink size={12} /> 在源码浏览器中查看 README

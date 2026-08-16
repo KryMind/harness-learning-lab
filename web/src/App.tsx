@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react'
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom'
-import { Search, Sun, Moon, GitCommit } from 'lucide-react'
+import { Search, Sun, Moon } from 'lucide-react'
 import { SECTIONS, pageByRoute } from './content/pages'
 import { useTheme } from './theme'
 import { useData } from './data'
-import { api } from './api'
+import type { IndexFile, PkgRecord, DocRecord } from './types'
 
 import OverviewPage from './pages/OverviewPage'
 import CordisPage from './pages/CordisPage'
@@ -20,26 +20,31 @@ import WebUIPage from './pages/WebUIPage'
 import PackagesPage from './pages/PackagesPage'
 import SourcePage from './pages/SourcePage'
 import LivePage from './pages/LivePage'
+import PluginGeneratorPage from './pages/PluginGeneratorPage'
 import PlaygroundPage from './pages/PlaygroundPage'
 
 export default function App() {
   const { theme, toggle } = useTheme()
-  const { meta } = useData()
+  const { meta, files, packages, docs } = useData()
   const location = useLocation()
   const navigate = useNavigate()
   const [q, setQ] = useState('')
-  const [results, setResults] = useState<Awaited<ReturnType<typeof api.search>> | null>(null)
+  const [results, setResults] = useState<{ files: IndexFile[]; packages: PkgRecord[]; docs: DocRecord[] } | null>(null)
 
   const current = pageByRoute(location.pathname)
 
-  const onSearch = async (v: string) => {
+  const onSearch = (v: string) => {
     setQ(v)
-    if (!v.trim()) return setResults(null)
-    try {
-      setResults(await api.search(v.trim()))
-    } catch {
-      setResults(null)
-    }
+    const s = v.trim().toLowerCase()
+    if (!s) return setResults(null)
+    // 纯前端过滤：直接在已加载的静态数据（repo-index / packages / docs-index）中检索
+    setResults({
+      files: files.filter((f) => f.source_path.toLowerCase().includes(s) || f.title.toLowerCase().includes(s)).slice(0, 20),
+      packages: packages
+        .filter((p) => p.name.toLowerCase().includes(s) || p.dir.toLowerCase().includes(s) || p.description.toLowerCase().includes(s))
+        .slice(0, 8),
+      docs: docs.filter((d) => d.source_path.toLowerCase().includes(s) || d.title.toLowerCase().includes(s)).slice(0, 8),
+    })
   }
 
   const gitLabel = useMemo(() => {
@@ -162,6 +167,7 @@ export default function App() {
             <Route path="/packages" element={<PackagesPage />} />
             <Route path="/source" element={<SourcePage />} />
             <Route path="/live" element={<LivePage />} />
+            <Route path="/plugin-generator" element={<PluginGeneratorPage />} />
             <Route path="/playground" element={<PlaygroundPage />} />
             <Route path="*" element={<div className="empty"><div className="big">404</div>页面不存在</div>} />
           </Routes>

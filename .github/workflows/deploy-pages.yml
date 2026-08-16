@@ -1,0 +1,65 @@
+# 构建并部署 Harness Learning Lab 到 GitHub Pages
+#
+# 触发：
+#   - main 分支 push
+#   - workflow_dispatch（手动）
+#
+# 说明：本仓库不提交 deepseek-harness 官方源码。workflow 不会 clone 官方仓库，
+# 而是复用已提交的 generated/ 静态数据（pnpm generate 在无源码时自动同步它）。
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同一时间只允许一个部署进行
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # pnpm build = pnpm generate（复用已提交 generated/ 到 web/public/data/） + vite build
+      - name: Build static site
+        env:
+          # GitHub Pages 部署在子路径 https://<user>.github.io/<repo>/，
+          # 动态取仓库名设置 base，不硬编码。
+          HLL_BASE_URL: /${{ github.event.repository.name }}/
+        run: pnpm build
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: web/dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

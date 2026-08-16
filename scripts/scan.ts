@@ -2,20 +2,65 @@
  * Harness Learning Lab —— Repo Scanner
  *
  * 扫描 deepseek-harness 官方源码，生成：
- *   generated/repo-index.json   全量文件索引（每条含 source_path/source_type/package/title/commit_hash）
- *   generated/packages.json     packages 目录下所有 package.json 的解析结果
- *   generated/docs-index.json   文档文件索引（标题大纲 + 外链）
+ *   generated/repo-index.json      全量文件索引（每条含 source_path/source_type/package/title/commit_hash）
+ *   generated/packages.json        packages 目录下所有 package.json 的解析结果
+ *   generated/docs-index.json      文档文件索引（标题大纲 + 外链）
+ *   generated/stats.json           汇总统计
+ *   generated/sources-index.json   源码路径 → chunk 映射
+ *   generated/sources/chunk-*.json 源码内容分块（浏览器端按需加载）
  *
- * 用法：pnpm scan    （在仓库根目录执行）
+ * 同时把产物同步到 web/public/data/，使前端无需 server 即可静态加载。
+ *
+ * 用法：pnpm generate    （在仓库根目录执行）
  */
-import { readFileSync, writeFileSync, existsSync, mkdirSync, statSync, readdirSync } from 'node:fs'
-import { join, relative, dirname, basename, extname, sep, normalize } from 'node:path'
+import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, copyFileSync } from 'node:fs'
+import { join, relative, dirname, basename, extname, sep } from 'node:path'
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 
 const ROOT = process.cwd()
 const SRC = join(ROOT, 'deepseek-harness')
 const OUT = join(ROOT, 'generated')
+/** Vite public 目录，前端通过 import.meta.env.BASE_URL + 'data/...' 静态读取 */
+const PUB = join(ROOT, 'web', 'public', 'data')
+
+// ---------------------------------------------------------------------------
+// 产物写入：同时写入 generated/（提交 Git，权威数据）与 web/public/data/（构建产物）
+// ---------------------------------------------------------------------------
+function writeArtifact(rel: string, obj: unknown) {
+  const payload = JSON.stringify(obj)
+  mkdirSync(dirname(join(OUT, rel)), { recursive: true })
+  writeFileSync(join(OUT, rel), payload)
+  mkdirSync(dirname(join(PUB, rel)), { recursive: true })
+  writeFileSync(join(PUB, rel), payload)
+}
+
+/** 官方源码缺失时（如 CI），把已提交的 generated/ 原样同步到 web/public/data/。 */
+function syncGeneratedToPublic() {
+  if (!existsSync(OUT)) return
+  const copyDir = (from: string, to: string) => {
+    for (const ent of readdirSync(from, { withFileTypes: true })) {
+      const src = join(from, ent.name)
+      const dst = join(to, ent.name)
+      if (ent.isDirectory()) {
+        mkdirSync(dst, { recursive: true })
+        copyDir(src, dst)
+      } else {
+        mkdirSync(dirname(dst), { recursive: true })
+        copyFileSync(src, dst)
+      }
+    }
+  }
+  mkdirSync(PUB, { recursive: true })
+  copyDir(OUT, PUB)
+}
+
+// deepseek-harness 官方源码缺失 → 直接复用已提交的 generated/ 数据（保证静态站可独立构建）
+if (!existsSync(SRC)) {
+  syncGeneratedToPublic()
+  console.log('✔ 未找到 deepseek-harness/，已从已提交的 generated/ 同步静态数据到 web/public/data/')
+  process.exit(0)
+}
 
 // ---------------------------------------------------------------------------
 // 小工具
@@ -339,15 +384,69 @@ const meta = {
   packageCount: packages.length,
 }
 
+// 统计
+const byType: Record<string, number> = {}
+for (const f of files) byType[f.source_type] = (byType[f.source_type] ?? 0) + 1
+const byGroup: Record<string, number> = {}
+for (const p of packages) {
+  const g = p.dir.startsWith('apps/') ? 'apps' : p.dir.split('/')[1] ?? 'other'
+  byGroup[g] = (byGroup[g] ?? 0) + 1
+}
+let srcLineCount = 0
+for (const f of files) {
+  if (/\.(ts|tsx|mts|cts|js|jsx|py)$/i.test(f.source_path)) {
+    srcLineCount += readText(f.source_path).split('\n').length
+  }
+}
+const stats = { fileCount: files.length, packageCount: packages.length, docCount: docs.length, srcLineCount, byType, byGroup }
+
+// ---------------------------------------------------------------------------
+// 6) sources 静态快照（分块，浏览器端源码阅读器按需加载）
+// ---------------------------------------------------------------------------
+
+const CHUNK_TARGET = 800_000 // 每块约 800KB
+const chunkIndex: Record<string, string> = {}
+const chunks: Record<string, Record<string, string>> = {}
+let chunkNo = 0
+let curName = `chunk-${String(chunkNo).padStart(3, '0')}`
+let curChunk: Record<string, string> = {}
+let curSize = 0
+const flushChunk = () => {
+  if (Object.keys(curChunk).length === 0) return
+  chunks[curName] = curChunk
+  curChunk = {}
+  curSize = 0
+}
+for (const f of files) {
+  const text = readText(f.source_path)
+  if (curSize > 0 && curSize + text.length > CHUNK_TARGET) {
+    flushChunk()
+    chunkNo++
+    curName = `chunk-${String(chunkNo).padStart(3, '0')}`
+  }
+  chunkIndex[f.source_path] = curName
+  curChunk[f.source_path] = text
+  curSize += text.length
+}
+flushChunk()
+
 mkdirSync(OUT, { recursive: true })
 
-writeFileSync(join(OUT, 'repo-index.json'), JSON.stringify({ meta, files }, null, 2))
-writeFileSync(join(OUT, 'packages.json'), JSON.stringify({ meta, packages }, null, 2))
-writeFileSync(join(OUT, 'docs-index.json'), JSON.stringify({ meta, docs }, null, 2))
+writeArtifact('repo-index.json', { meta, files })
+writeArtifact('packages.json', { meta, packages })
+writeArtifact('docs-index.json', { meta, docs })
+writeArtifact('stats.json', stats)
+writeArtifact('sources-index.json', chunkIndex)
+for (const [name, map] of Object.entries(chunks)) {
+  writeArtifact(`sources/${name}.json`, map)
+}
 
 // 汇总行
 console.log('✔ repo-index.json   files:', files.length)
 console.log('✔ packages.json     packages:', packages.length)
 console.log('✔ docs-index.json   docs:', docs.length)
+console.log('✔ stats.json        srcLineCount:', srcLineCount)
+console.log('✔ sources 快照      chunks:', Object.keys(chunks).length, 'files:', Object.keys(chunkIndex).length)
 console.log('repoCommit:', repoCommit ?? '（非 git 仓库，使用内容哈希）')
 console.log('输出目录:', OUT)
+console.log('同步目录:', PUB)

@@ -1,15 +1,24 @@
+# 依赖
 node_modules/
-dist/
-*.log
-.env
-.DS_Store
-generated/
-server/generated/
-# 官方源码独立克隆，自带 .git，不纳入本仓库
-deepseek-harness/
-# 空壳嵌套 git 目录（无文件、无提交）
-harness-learning-lab/
+
 # 构建产物
-web/dist/
-server/dist/
+dist/
 *.tsbuildinfo
+
+# 环境 / 凭据
+.env
+.env.*
+!.env.example
+
+# 官方源码整仓（不作为学习站内容提交，仅作扫描输入）
+deepseek-harness/
+
+# 构建期由 pnpm generate 从 generated/ 同步出的前端静态数据
+web/public/data/
+
+# 日志 / 系统
+*.log
+.DS_Store
+.idea/
+.vscode/
+.cache/

@@ -80,7 +80,7 @@ export interface PageContent {
 }
 
 // ---------------------------------------------------------------------------
-// 生成数据（来自 /api/*）
+// 生成数据（来自 generated/*.json，构建期由 scripts/scan.ts 生成）
 // ---------------------------------------------------------------------------
 
 export interface Meta {
@@ -136,14 +136,4 @@ export interface Stats {
   srcLineCount: number
   byType: Record<string, number>
   byGroup: Record<string, number>
-}
-
-export interface DumpConfigResult {
-  ok: boolean
-  available: boolean
-  error?: string
-  hint?: string
-  stderr?: string
-  raw?: string
-  tree?: { indent: number; text: string }[]
 }

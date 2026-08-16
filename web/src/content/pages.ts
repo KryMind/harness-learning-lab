@@ -54,6 +54,7 @@ export const SECTIONS: NavSection[] = [
   {
     title: '动手',
     pages: [
+      { id: 'plugingen', route: '/plugin-generator', emoji: '🧩', title: 'Plugin Generator', navTitle: 'Plugin Generator', subtitle: '在线生成插件模板' },
       { id: 'playground', route: '/playground', emoji: '🧪', title: 'Playground', navTitle: 'Playground', subtitle: '自己写一个 Harness Plugin' },
     ],
   },

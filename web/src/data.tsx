@@ -1,5 +1,4 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
-import { api } from './api'
 import type { Meta, IndexFile, PkgRecord, DocRecord, Stats } from './types'
 
 interface DataState {
@@ -18,6 +17,15 @@ interface DataState {
 
 const Ctx = createContext<DataState | null>(null)
 
+// 静态数据基址：GitHub Pages 子路径下自动带前缀（由 vite base 决定）
+const BASE = import.meta.env.BASE_URL
+
+async function loadJson<T>(rel: string): Promise<T> {
+  const res = await fetch(BASE + rel)
+  if (!res.ok) throw new Error(`加载 ${rel} 失败: ${res.status}`)
+  return res.json() as Promise<T>
+}
+
 export function DataProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<Omit<DataState, 'packageByDir' | 'docByPath' | 'fileByPath' | 'refresh'>>({
     loading: true,
@@ -29,14 +37,20 @@ export function DataProvider({ children }: { children: ReactNode }) {
     stats: null,
   })
 
-  const load = () => {
-    setState((s) => ({ ...s, loading: true, error: null }))
-    Promise.all([api.index(), api.packages(), api.docs(), api.stats(), api.meta()])
-      .then(([idx, pkgs, doc, stats, meta]) => {
+  useEffect(() => {
+    let alive = true
+    Promise.all([
+      loadJson<{ meta: Meta; files: IndexFile[] }>('data/repo-index.json'),
+      loadJson<{ meta: Meta; packages: PkgRecord[] }>('data/packages.json'),
+      loadJson<{ meta: Meta; docs: DocRecord[] }>('data/docs-index.json'),
+      loadJson<Stats>('data/stats.json'),
+    ])
+      .then(([idx, pkgs, doc, stats]) => {
+        if (!alive) return
         setState({
           loading: false,
           error: null,
-          meta: meta.meta,
+          meta: idx.meta,
           files: idx.files,
           packages: pkgs.packages,
           docs: doc.docs,
@@ -44,18 +58,21 @@ export function DataProvider({ children }: { children: ReactNode }) {
         })
       })
       .catch((e) => {
+        if (!alive) return
         setState((s) => ({ ...s, loading: false, error: String(e?.message ?? e) }))
       })
-  }
-
-  useEffect(load, [])
+    return () => {
+      alive = false
+    }
+  }, [])
 
   const value: DataState = {
     ...state,
     packageByDir: (dir: string) => state.packages.find((p) => p.dir === dir),
     docByPath: (path: string) => state.docs.find((d) => d.source_path === path),
     fileByPath: (path: string) => state.files.find((f) => f.source_path === path),
-    refresh: load,
+    // 静态数据无需刷新
+    refresh: () => {},
   }
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>

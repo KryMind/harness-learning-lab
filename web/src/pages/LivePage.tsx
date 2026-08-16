@@ -1,33 +1,23 @@
-import { useCallback, useEffect, useState } from 'react'
-import { RefreshCw, TerminalSquare } from 'lucide-react'
-import { api } from '../api'
-import type { DumpConfigResult } from '../types'
+import { useNavigate } from 'react-router-dom'
+import { ExternalLink, Info } from 'lucide-react'
 
+/**
+ * Live Harness 已静态化：
+ * 原“实时执行 dsh --profile web --dump-config”属于 Runtime Live 功能，
+ * 已迁移至未来的 Harness Plugin Studio。本页改为静态讲解卡，不发起任何运行时请求。
+ */
 export default function LivePage() {
-  const [data, setData] = useState<DumpConfigResult | null>(null)
-  const [loading, setLoading] = useState(false)
-
-  const load = useCallback(async () => {
-    setLoading(true)
-    try {
-      setData(await api.dumpConfig())
-    } catch (e) {
-      setData({ ok: false, available: false, error: String(e instanceof Error ? e.message : e) })
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    load()
-  }, [load])
+  const navigate = useNavigate()
 
   return (
     <div className="page">
       <div className="hero">
         <span className="tag">🟢 Live Harness</span>
         <h1>当前机器的真实 Plugin Tree</h1>
-        <p className="sub">后端执行 <span className="mono">dsh --profile web --dump-config</span>，把“这台机器上实际启动出来的 Harness”可视化。</p>
+        <p className="sub">
+          这里原本会执行 <span className="mono">dsh --profile web --dump-config</span>，
+          把“这台机器上实际启动出来的 Harness”可视化。该能力属于 Runtime Live，已迁移。
+        </p>
         <div className="learn">
           <span className="learn-chip">为什么它存在</span>
           <span className="learn-chip">谁注册它</span>
@@ -37,91 +27,76 @@ export default function LivePage() {
       </div>
 
       <div className="section-title">
-        <h2>执行环境</h2>
-        <span className="hint">需要 deepseek-harness 已安装依赖并构建出 dsh</span>
+        <h2>ℹ️ Runtime Live 功能已迁移</h2>
+        <span className="hint">本学习站已改为纯静态架构</span>
       </div>
 
       <div className="cards">
         <div className="card">
-          <div className="card-head"><span className="ic">⚙️</span><span>dsh 是否可用</span></div>
+          <div className="card-head"><span className="ic">🚀</span><span>Runtime Live 功能去向</span></div>
           <p className="card-body">
-            {data === null
-              ? '正在探测…'
-              : data.available
-                ? '✓ 已找到 dsh 可执行文件'
-                : '✗ 未找到 dsh（未构建）'}
+            <b>Runtime Live 功能已迁移至未来的 Harness Plugin Studio。</b>
+            在线学习站不再执行任何真实 Harness 进程、Session Live Stream、Tool Live Execution 或 Shell。
+            这些交互能力将由 Harness Plugin Studio 在本地提供。
           </p>
           <div className="src-list">
-            <span className={`badge ${data?.ok ? 'success' : 'danger'}`}>{data?.ok ? '运行成功' : '未成功'}</span>
-            <button className="btn ghost" onClick={load} disabled={loading}>
-              <RefreshCw size={14} style={{ marginRight: 6 }} />{loading ? '运行中…' : '重新运行'}
+            <span className="badge warning">静态讲解页</span>
+            <span className="badge success">零运行时请求</span>
+          </div>
+        </div>
+        <div className="card">
+          <div className="card-head"><span className="ic">🏗</span><span>Profile / Bundle 是什么</span></div>
+          <p className="card-body">
+            Profile → Bundle → 插件行（id + name + config）。每一行都是一个真实会被 Cordis 宿主启动的插件。
+            这就是“一台机器上 Harness 到底由什么组成”的权威答案。
+          </p>
+          <div className="src-list">
+            <button className="src-chip" onClick={() => navigate('/profile')}>
+              → 学习 Profile / Bundle
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="section-title" style={{ marginTop: 24 }}>
+        <h2>📌 相关源码映射</h2>
+        <span className="hint">“这台机器上实际启动的插件树”由以下源码决定</span>
+      </div>
+      <div className="cards">
+        <div className="card">
+          <div className="card-head"><span className="ic">🧬</span><span>CLI 启动与解析</span></div>
+          <p className="card-body">
+            <span className="mono">apps/cli/src/profile-boot.ts</span> 负责加载 profile 与 bundle；
+            <span className="mono">apps/cli/src/dump-config.ts</span> 负责打印插件树。
+          </p>
+          <div className="src-list">
+            <button className="src-chip" onClick={() => navigate(`/source?path=${encodeURIComponent('apps/cli/src/dump-config.ts')}`)}>
+              <ExternalLink size={12} /> dump-config.ts
+            </button>
+            <button className="src-chip" onClick={() => navigate(`/source?path=${encodeURIComponent('apps/cli/src/profile-boot.ts')}`)}>
+              <ExternalLink size={12} /> profile-boot.ts
             </button>
           </div>
         </div>
         <div className="card">
-          <div className="card-head"><span className="ic">🏗</span><span>什么意思</span></div>
+          <div className="card-head"><span className="ic">🧩</span><span>Bundle 基础</span></div>
           <p className="card-body">
-            Profile → Bundle → 插件行（id + name + config）。每一行都是一个真实会被 Cordis 宿主启动的插件。这就是“这台机器上 Harness 到底由什么组成”的权威答案。
+            <span className="mono">packages/bundle/base</span> 是所有 profile 的公共核心；
+            <span className="mono">dsh-web-app</span> 叠加 UI 插件层。
           </p>
+          <div className="src-list">
+            <button className="src-chip" onClick={() => navigate('/profile')}>
+              → 去 Profile 页看 Bundle 组成
+            </button>
+          </div>
         </div>
       </div>
 
-      {data?.error && (
-        <div className="codeview" style={{ marginTop: 16 }}>
-          <div className="cv-head"><TerminalSquare size={13} /> stderr / 错误</div>
-          <pre style={{ padding: 16, fontSize: 12.5, fontFamily: 'var(--mono)', overflow: 'auto', maxHeight: 260, whiteSpace: 'pre-wrap', color: 'var(--danger)' }}>
-            {data.error}
-            {data.stderr ? `\n\n${data.stderr}` : ''}
-          </pre>
-        </div>
-      )}
-
-      {data?.hint && (
-        <div className="empty" style={{ marginTop: 12, padding: 20 }}>
-          💡 {data.hint}
-        </div>
-      )}
-
-      {data?.tree && data.tree.length > 0 && (
-        <>
-          <div className="section-title">
-            <h2>🌳 Plugin Tree</h2>
-            <span className="hint">缩进表示层级；每个插件一行</span>
-          </div>
-          <div className="codeview">
-            <div className="cv-head"><TerminalSquare size={13} /> dsh --profile web --dump-config</div>
-            <div style={{ padding: '14px 16px', overflow: 'auto' }}>
-              {data.tree.map((node, i) => (
-                <div
-                  key={i}
-                  style={{
-                    paddingLeft: node.indent * 16,
-                    fontFamily: 'var(--mono)',
-                    fontSize: 12.5,
-                    lineHeight: 1.7,
-                    color: node.indent === 0 ? 'var(--primary)' : 'var(--text-2)',
-                    whiteSpace: 'pre',
-                  }}
-                >
-                  {node.indent === 0 ? '▸ ' : node.indent === 1 ? '├─ ' : '· '}
-                  {node.text}
-                </div>
-              ))}
-            </div>
-          </div>
-        </>
-      )}
-
-      {data?.raw && !data.tree && (
-        <div className="codeview" style={{ marginTop: 16 }}>
-          <div className="cv-head"><TerminalSquare size={13} /> 原始输出</div>
-          <pre style={{ padding: 16, fontSize: 12.5, fontFamily: 'var(--mono)', overflow: 'auto', maxHeight: 400, whiteSpace: 'pre-wrap' }}>{data.raw}</pre>
-        </div>
-      )}
-
-      {data?.ok && data.tree && data.tree.length === 0 && (
-        <div className="empty" style={{ marginTop: 16 }}>命令执行成功但没有任何输出（可能是构建版本差异）。</div>
-      )}
+      <div className="empty" style={{ marginTop: 24, padding: 24 }}>
+        <Info size={15} style={{ verticalAlign: -2, marginRight: 6 }} />
+        提示：学习站中的「Plugin Generator」负责创建插件模板（纯浏览器端）；
+        真实的安装、加载、Hot Reload 与运行测试将在 Harness Plugin Studio 中完成。
+      </div>
     </div>
   )
 }
