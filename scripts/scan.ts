@@ -17,6 +17,8 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, copyFi
 import { join, relative, dirname, basename, extname, sep } from 'node:path'
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
+import ts from 'typescript'
+import { LESSONS, lessonMatchesPath } from '../web/src/course/lessons'
 
 const ROOT = process.cwd()
 const SRC = join(ROOT, 'deepseek-harness')
@@ -430,6 +432,118 @@ for (const f of files) {
 }
 flushChunk()
 
+// ---------------------------------------------------------------------------
+// 5.5) search/api-symbols.json —— TS AST 扫描 API Symbol（三级分级，UX#12）
+// 官方 Surface（ctx.xxx 白名单） > Exported Symbol > （Internal Symbol 不进普通搜索）
+// 只扫 packages/** 与 vendor/** 的 src/**，跳过 apps/examples/python/模板 以控制噪声。
+// ---------------------------------------------------------------------------
+type ApiSymbol = {
+  symbol: string
+  tier: 'official-surface' | 'exported-symbol'
+  package: string | null
+  sourcePath: string
+  line: number
+  signature: string
+  lessonIds: string[]
+}
+
+/** ctx 服务根名白名单（来源：docs/capability-seams 与 content 已核实的 ctx.* 服务） */
+const CTX_WHITELIST = [
+  'ctx.llm', 'ctx.tools', 'ctx.sessions', 'ctx.session', 'ctx.skills', 'ctx.subagents',
+  'ctx.workflowEngine', 'ctx.sandbox', 'ctx.agents', 'ctx.agentLoop', 'ctx.systemPrompt',
+  'ctx.scope', 'ctx.slots', 'ctx.plugins', 'ctx.bundles', 'ctx.permission', 'ctx.persistence',
+  'ctx.sessionQuery', 'ctx.hooks', 'ctx.inject', 'ctx.service', 'ctx.on', 'ctx.emit',
+]
+const CTX_RE = /\bctx\.([A-Za-z_$][\w$]*)(\.([A-Za-z_$][\w$]*))?/g
+
+function hasExportModifier(node: ts.Node): boolean {
+  const mods = (node as ts.HasModifiers).modifiers
+  return !!mods && mods.some((m) => m.kind === ts.SyntaxKind.ExportKeyword)
+}
+
+function truncateSig(text: string, max = 110): string {
+  const one = text.replace(/\s+/g, ' ').trim()
+  return one.length > max ? `${one.slice(0, max)}…` : one
+}
+
+function extractApiSymbols(): ApiSymbol[] {
+  const out: ApiSymbol[] = []
+  const seenExported = new Set<string>()
+  const ctxSet = new Set<string>()
+  const ctxLessons = new Map<string, Set<string>>()
+
+  const srcFiles = files.filter(
+    (f) =>
+      /\.(ts|tsx|mts|cts)$/.test(f.source_path) &&
+      (f.source_path.startsWith('packages/') || f.source_path.startsWith('vendor/')) &&
+      f.source_path.includes('/src/') &&
+      !/\.(spec|test)\./.test(f.source_path),
+  )
+
+  for (const f of srcFiles) {
+    const text = readText(f.source_path)
+    if (!text) continue
+    const fLessons = LESSONS.filter((l) => lessonMatchesPath(l, f.source_path)).map((l) => l.id)
+
+    // 1) official-surface：收集 ctx.<svc>(.<method>)? 并记录其关联课程
+    CTX_RE.lastIndex = 0
+    let m: RegExpExecArray | null
+    while ((m = CTX_RE.exec(text)) !== null) {
+      const root = `ctx.${m[1]}`
+      const full = m[2] ? `${root}.${m[3]}` : root
+      if (!CTX_WHITELIST.includes(root) && !CTX_WHITELIST.includes(full)) continue
+      ctxSet.add(full)
+      if (!ctxLessons.has(full)) ctxLessons.set(full, new Set())
+      for (const id of fLessons) ctxLessons.get(full)!.add(id)
+    }
+
+    // 2) exported-symbol：顶层 export function/class/interface/type/enum
+    //    只保留与课程关联的符号（降噪，UX#12：Internal/无关符号不进普通搜索）
+    if (!fLessons.length) continue
+    const sf = ts.createSourceFile(f.source_path, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS)
+    sf.forEachChild((node) => {
+      let name: string | undefined
+      let kind: 'function' | 'class' | 'interface' | 'type' | 'enum' | undefined
+      if (ts.isFunctionDeclaration(node) && node.name) { name = node.name.text; kind = 'function' }
+      else if (ts.isClassDeclaration(node) && node.name) { name = node.name.text; kind = 'class' }
+      else if (ts.isInterfaceDeclaration(node) && node.name) { name = node.name.text; kind = 'interface' }
+      else if (ts.isTypeAliasDeclaration(node)) { name = node.name.text; kind = 'type' }
+      else if (ts.isEnumDeclaration(node)) { name = node.name.text; kind = 'enum' }
+      if (!name || !kind || !hasExportModifier(node)) return
+      const key = `${name}@${kind}`
+      if (seenExported.has(key)) return
+      seenExported.add(key)
+      out.push({
+        symbol: name,
+        tier: 'exported-symbol',
+        package: f.package,
+        sourcePath: f.source_path,
+        line: sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1,
+        signature: truncateSig(node.getText(sf)),
+        lessonIds: fLessons,
+      })
+    })
+  }
+
+  // official-surface 统一追加（集合去重后排序，sourcePath 由前端匹配）
+  for (const sym of Array.from(ctxSet).sort()) {
+    out.push({
+      symbol: sym,
+      tier: 'official-surface',
+      package: null,
+      sourcePath: '',
+      line: 0,
+      signature: `${sym} —— Harness 官方 ctx 服务 API`,
+      lessonIds: Array.from(ctxLessons.get(sym) ?? []),
+    })
+  }
+  return out
+}
+
+const apiSymbols = extractApiSymbols()
+writeArtifact('search/api-symbols.json', { meta, symbols: apiSymbols })
+writeArtifact('search/version.json', { meta: { snapshotCommit: repoCommit, repo: meta.repo } })
+
 mkdirSync(OUT, { recursive: true })
 
 writeArtifact('repo-index.json', { meta, files })
@@ -446,6 +560,8 @@ console.log('✔ repo-index.json   files:', files.length)
 console.log('✔ packages.json     packages:', packages.length)
 console.log('✔ docs-index.json   docs:', docs.length)
 console.log('✔ stats.json        srcLineCount:', srcLineCount)
+console.log('✔ search/api-symbols.json  official-surface:', apiSymbols.filter((a) => a.tier === 'official-surface').length, 'exported-symbol:', apiSymbols.filter((a) => a.tier === 'exported-symbol').length)
+console.log('✔ search/version.json      snapshotCommit:', repoCommit ?? '（非 git 仓库，使用内容哈希）')
 console.log('✔ sources 快照      chunks:', Object.keys(chunks).length, 'files:', Object.keys(chunkIndex).length)
 console.log('repoCommit:', repoCommit ?? '（非 git 仓库，使用内容哈希）')
 console.log('输出目录:', OUT)
