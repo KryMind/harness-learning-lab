@@ -1,0 +1,15 @@
+node_modules/
+dist/
+*.log
+.env
+.DS_Store
+generated/
+server/generated/
+# 官方源码独立克隆，自带 .git，不纳入本仓库
+deepseek-harness/
+# 空壳嵌套 git 目录（无文件、无提交）
+harness-learning-lab/
+# 构建产物
+web/dist/
+server/dist/
+*.tsbuildinfo
