@@ -6,26 +6,40 @@ import { useTheme } from '../theme'
 import SourceViewer from '../components/SourceViewer'
 
 const TEMPLATE = `// my-tool.ts —— 一个最简单的 Harness 工具插件
-import type { ToolDefinition } from '@deepseek-ai/dsh-tools'
+// 官方写法：defineTool() + ctx.tools.register()；execute 返回规范 JSON value
+import { defineTool } from '@deepseek-ai/dsh-tools'
+import type { ContentBlock } from '@deepseek-ai/dsh-llm'
+import type { Context } from '@deepseek-ai/cordis'
 
-export const hello: ToolDefinition = {
-  name: 'hello_world',
-  description: '向用户打个招呼，并返回当前时间。用于演示如何注册一个工具。',
-  isConcurrencySafe: true,
-  parameters: {
-    type: 'object',
-    properties: {
+export const name = 'hello-world'
+export const inject = ['tools']
+
+export function apply(ctx: Context): void {
+  ctx.tools.register(defineTool({
+    name: 'hello-world',
+    description: '向用户打个招呼，并返回当前时间。用于演示如何注册一个工具。',
+    parameters: {
       greeting: { type: 'string', description: '问候语' },
     },
-  },
-  async execute(args: { greeting?: string }) {
-    const now = new Date().toISOString()
-    return {
-      content: [
-        { type: 'text', text: \`\${args.greeting ?? '你好'}！现在是 \${now}\` },
+    output: {
+      // 规范输出：execute 的返回值会与 schema 严格校验，render 再投影成模型可见文本
+      schema: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          greeting: { type: 'string', required: true },
+          now: { type: 'string', required: true },
+        },
+      },
+      render: (_args, value): ContentBlock[] => [
+        { type: 'text', text: JSON.stringify(value) },
       ],
-    }
-  },
+    },
+    isConcurrencySafe: () => true,
+    async execute(args) {
+      return { greeting: args.greeting ?? '你好', now: new Date().toISOString() }
+    },
+  }))
 }
 `
 
@@ -52,7 +66,8 @@ export default function PlaygroundPage() {
     if (!/description\s*:/.test(code)) issues.push('缺少 description（模型靠它决定何时调用）')
     if (!/async\s+execute/.test(code)) issues.push('缺少 async execute 执行函数')
     if (!/parameters\s*:/.test(code)) issues.push('缺少 parameters（工具入参 schema）')
-    if (/isConcurrencySafe/.test(code) === false) issues.push('建议声明 isConcurrencySafe（并行安全标记）')
+    if (!/output\s*:/.test(code)) issues.push('缺少 output（规范输出：schema + render）')
+    if (!/ctx\.tools\.register/.test(code)) issues.push('缺少 ctx.tools.register（注册入口）')
     setCheck({ ok: issues.length === 0, issues })
   }
 
@@ -82,9 +97,10 @@ export default function PlaygroundPage() {
     () => [
       { label: '声明 name（工具身份）', pass: /name\s*:/.test(code) },
       { label: '提供 description（模型决策依据）', pass: /description\s*:/.test(code) },
-      { label: '实现 async execute', pass: /async\s+execute/.test(code) },
+      { label: '实现 async execute（返回规范 JSON value）', pass: /async\s+execute/.test(code) },
       { label: '声明 parameters（入参 schema）', pass: /parameters\s*:/.test(code) },
-      { label: 'isConcurrencySafe（并行安全）', pass: /isConcurrencySafe/.test(code) },
+      { label: '定义 output.schema + render（规范输出）', pass: /output\s*:/.test(code) && /render\s*:/.test(code) },
+      { label: 'ctx.tools.register（注册入口）', pass: /ctx\.tools\.register/.test(code) },
     ],
     [code],
   )
@@ -95,7 +111,8 @@ export default function PlaygroundPage() {
         <span className="tag">🧪 Playground</span>
         <h1>自己写一个 Harness Plugin</h1>
         <p className="sub">
-          按官方 cookbook 的套路：定义 ToolDefinition → ctx.tools.register → 打包成插件挂进 profile。
+          按官方 cookbook 的套路：defineTool() → ctx.tools.register() → 打包成插件挂进 profile。
+          execute 返回规范 JSON value，output.schema/render 定义工具契约。
           下面是可编辑模板与“模拟 profile 组装”预览（本页不真正执行 dsh，只是学习脚手架）。
         </p>
         <div className="learn">
@@ -108,7 +125,7 @@ export default function PlaygroundPage() {
 
       <div className="section-title">
         <h2>① 工具插件模板</h2>
-        <span className="hint">参考 packages/core/tools 的 ToolDefinition 结构；可直接修改</span>
+        <span className="hint">参考 packages/core/tools/schema.ts 的 defineTool 结构；可直接修改</span>
       </div>
       <Editor
         height={360}
@@ -154,7 +171,7 @@ export default function PlaygroundPage() {
           <p className="card-body">官方 cookbook 的“添加一个工具”教程，以及工具运行时源码。</p>
           <div className="src-list">
             <button className="src-chip" onClick={() => navigate('/source?path=docs/cookbook/adding-a-tool.md')}>cookbook/adding-a-tool.md</button>
-            <button className="src-chip" onClick={() => navigate('/source?path=packages/core/tools/src/types.ts')}>tools/types.ts</button>
+            <button className="src-chip" onClick={() => navigate('/source?path=packages/core/tools/src/schema.ts')}>tools/schema.ts（defineTool）</button>
             <button className="src-chip" onClick={() => navigate('/source?path=packages/core/tools/src/index.ts')}>tools/index.ts</button>
           </div>
         </div>

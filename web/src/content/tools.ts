@@ -24,10 +24,10 @@ export const tools: PageContent = {
       sources: [{ path: 'packages/core/tools/src/index.ts', label: 'core/tools/src/index.ts' }],
     },
     {
-      id: 'tool-def', label: 'ToolDefinition', kind: 'concept',
-      brief: '一个工具 = 名称 + 描述 + schema + 执行函数',
-      detail: '工具声明 name、description、input schema（json-schema 派生，见 json-schema.ts）、execution 函数与 isConcurrencySafe 等元数据。',
-      sources: [{ path: 'packages/core/tools/src/types.ts', label: 'tools/types.ts' }, { path: 'packages/core/tools/src/schema.ts', label: 'schema.ts' }],
+      id: 'tool-def', label: 'defineTool()', kind: 'concept',
+      brief: '推荐写法：defineTool() 声明 名称+描述+schema+output+执行函数',
+      detail: '官方推荐用 defineTool() 构造工具（tools/schema.ts），再交给 ctx.tools.register() 注册。它声明 name、description、入参 schema（parameters）、规范输出（output.schema + render）与 execute（返回规范 JSON value）。',
+      sources: [{ path: 'packages/core/tools/src/schema.ts', label: 'tools/schema.ts' }, { path: 'packages/core/tools/src/types.ts', label: 'types.ts' }],
     },
     {
       id: 'register', label: '注册', kind: 'concept',
@@ -128,7 +128,7 @@ export const tools: PageContent = {
     {
       title: '添加一个工具 = 一个插件',
       icon: '➕',
-      body: '官方 cookbook 演示：定义 ToolDefinition → ctx.tools.register → 打包成插件挂进 profile。这是 Playground 页要动手做的事。',
+      body: '官方 cookbook 演示：defineTool() → ctx.tools.register() → 打包成插件挂进 profile。这是 Playground 页要动手做的事。',
       sources: [{ path: 'docs/cookbook/adding-a-tool.md', label: 'adding-a-tool.md' }],
     },
   ],

@@ -5,12 +5,20 @@ import { Check, Copy, Download, ExternalLink, Sparkles } from 'lucide-react'
 import { useTheme } from '../theme'
 import { PLUGIN_TEMPLATES, generateProfilePatch, fileFor } from '../content/plugin-templates'
 
-const NAME_RE = /^[a-z][a-z0-9-]*$/
+// 官方名称规则：^[a-z0-9]+(?:-[a-z0-9]+)*$ —— 数字可开头、连字符两端须有字母数字
+const NAME_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+
+function defaultsFor(t: (typeof PLUGIN_TEMPLATES)[number]): Record<string, string> {
+  const out: Record<string, string> = {}
+  t.options?.forEach((o) => { out[o.id] = o.default })
+  return out
+}
 
 export default function PluginGeneratorPage() {
   const { theme } = useTheme()
   const navigate = useNavigate()
   const [typeId, setTypeId] = useState(PLUGIN_TEMPLATES[0].id)
+  const [opts, setOpts] = useState<Record<string, string>>(() => defaultsFor(PLUGIN_TEMPLATES[0]))
   const [name, setName] = useState('my-plugin')
   const [desc, setDesc] = useState('')
   const [copied, setCopied] = useState(false)
@@ -18,10 +26,20 @@ export default function PluginGeneratorPage() {
 
   const tmpl = PLUGIN_TEMPLATES.find((t) => t.id === typeId) ?? PLUGIN_TEMPLATES[0]
 
+  const selectType = (id: string) => {
+    setTypeId(id)
+    const t = PLUGIN_TEMPLATES.find((x) => x.id === id)
+    setOpts(t ? defaultsFor(t) : {})
+  }
+
   const nameValid = NAME_RE.test(name)
-  const code = useMemo(() => tmpl.generate(nameValid ? name : 'my-plugin', desc), [tmpl, nameValid, name, desc])
+  const code = useMemo(() => tmpl.generate(nameValid ? name : 'my-plugin', desc, opts), [tmpl, nameValid, name, desc, opts])
   const patch = useMemo(() => generateProfilePatch(nameValid ? name : 'my-plugin'), [nameValid, name])
   const fileName = fileFor(typeId, nameValid ? name : 'my-plugin')
+  const files = tmpl.files
+    ? tmpl.files(nameValid ? name : 'my-plugin', desc, opts)
+    : [{ path: fileName, content: code }]
+  const multiFile = files.length > 1
 
   const copy = async (text: string, setter: (v: boolean) => void) => {
     try {
@@ -41,6 +59,10 @@ export default function PluginGeneratorPage() {
     a.download = fname
     a.click()
     URL.revokeObjectURL(url)
+  }
+
+  const downloadAll = () => {
+    files.forEach((f) => download(f.content, f.path))
   }
 
   const inputStyle: React.CSSProperties = {
@@ -81,17 +103,29 @@ export default function PluginGeneratorPage() {
         <h2>① 选择插件类型</h2>
         <span className="hint">每种模板都标注了官方 source / docs 来源</span>
       </div>
-      <div className="cards">
+      <div role="radiogroup" aria-label="插件类型" className="cards">
         {PLUGIN_TEMPLATES.map((t) => (
-          <div
+          <button
             key={t.id}
+            type="button"
+            role="radio"
+            aria-checked={t.id === typeId}
             className="card"
-            style={{ cursor: 'pointer', borderColor: t.id === typeId ? 'var(--primary)' : undefined, outline: t.id === typeId ? '2px solid var(--primary)' : undefined }}
-            onClick={() => setTypeId(t.id)}
+            style={{
+              cursor: 'pointer',
+              textAlign: 'left',
+              fontFamily: 'inherit',
+              fontSize: 'inherit',
+              color: 'var(--text-1)',
+              background: t.id === typeId ? 'var(--bg-2)' : undefined,
+              borderColor: t.id === typeId ? 'var(--primary)' : undefined,
+              outline: t.id === typeId ? '2px solid var(--primary)' : undefined,
+            }}
+            onClick={() => selectType(t.id)}
           >
             <div className="card-head"><span className="ic">{t.emoji}</span><span>{t.label}</span></div>
             <p className="card-body">{t.description}</p>
-          </div>
+          </button>
         ))}
       </div>
 
@@ -103,24 +137,57 @@ export default function PluginGeneratorPage() {
         <div className="card">
           <div className="card-head"><span className="ic">✏️</span><span>插件名称</span></div>
           <input style={inputStyle} value={name} onChange={(e) => setName(e.target.value.trim())} placeholder="my-plugin" />
-          {!nameValid && <p style={{ color: 'var(--danger)', fontSize: 12, marginTop: 6 }}>名称仅允许小写字母 / 数字 / 连字符，且以字母开头</p>}
+          {!nameValid && <p style={{ color: 'var(--danger)', fontSize: 12, marginTop: 6 }}>名称须为小写 kebab-case：^[a-z0-9]+(?:-[a-z0-9]+)*$（数字可开头，如 2fa、my-2fa，不允许连续连字符 / 尾连字符）</p>}
         </div>
         <div className="card">
           <div className="card-head"><span className="ic">📝</span><span>一句话描述</span></div>
           <input style={inputStyle} value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="这个插件做什么（可选）" />
         </div>
+        {tmpl.options?.map((o) => (
+          <div className="card" key={o.id}>
+            <div className="card-head"><span className="ic">🧩</span><span>{o.label}</span></div>
+            <div role="radiogroup" aria-label={o.label} style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+              {o.values.map((v) => {
+                const selected = (opts[o.id] ?? o.default) === v.value
+                return (
+                  <button
+                    key={v.value}
+                    type="button"
+                    role="radio"
+                    aria-checked={selected}
+                    onClick={() => setOpts((prev) => ({ ...prev, [o.id]: v.value }))}
+                    style={{
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      fontFamily: 'inherit',
+                      fontSize: 13,
+                      color: 'var(--text-1)',
+                      background: selected ? 'var(--bg-2)' : 'var(--surface)',
+                      border: '1px solid',
+                      borderColor: selected ? 'var(--primary)' : 'var(--border)',
+                      borderRadius: 8,
+                      padding: '8px 10px',
+                    }}
+                  >
+                    {v.label}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        ))}
       </div>
 
       <div className="section-title" style={{ marginTop: 24 }}>
         <h2>③ 生成代码预览</h2>
-        <span className="hint">{tmpl.label} · 可编辑（预览为只读，复制后粘贴到编辑器修改）</span>
+        <span className="hint">{tmpl.label} · 预览为只读，复制后粘贴到编辑器修改{multiFile ? ` · 将导出 ${files.length} 个文件` : ''}</span>
         <span style={{ marginLeft: 'auto' }} className="src-list">
           <button className="btn ghost" onClick={() => copy(code, setCopied)}>
             {copied ? <Check size={14} style={{ marginRight: 6 }} /> : <Copy size={14} style={{ marginRight: 6 }} />}
             {copied ? '已复制' : '复制代码'}
           </button>
-          <button className="btn" onClick={() => download(code, fileName)}>
-            <Download size={14} style={{ marginRight: 6 }} />导出 {fileName}
+          <button className="btn" onClick={downloadAll}>
+            <Download size={14} style={{ marginRight: 6 }} />{multiFile ? `导出 ${files.length} 个文件` : `导出 ${fileName}`}
           </button>
         </span>
       </div>

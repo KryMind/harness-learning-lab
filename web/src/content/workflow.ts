@@ -31,8 +31,8 @@ export const workflow: PageContent = {
     },
     {
       id: 'script', label: '编排脚本', kind: 'concept',
-      brief: '声明式 + 命令式混合的 workflow 定义',
-      detail: '脚本内可用 agent()（派生子代理）、parallel()（并行分支）、pipeline()（串行管道）、loop() 等原语，动态组装执行图。',
+      brief: '模型编写的 JavaScript 编排脚本（script + meta + args）',
+      detail: '脚本内可用 agent()（派生子代理）、parallel()（并行分支）、pipeline()（串行管道）、phase()/log()（阶段与叙述）等原语动态编排；以 return <json> 结尾。',
       docs: [{ path: 'docs/subsystems/workflow.md', label: 'workflow.md' }],
     },
     {
