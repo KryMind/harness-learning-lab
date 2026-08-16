@@ -34,7 +34,7 @@ interface SourceViewerProps {
 
 export default function SourceViewer({ path, height = 420, showHeader = true }: SourceViewerProps) {
   const { theme } = useTheme()
-  const { fileByPath, packageByDir } = useData()
+  const { fileByPath, packageByDir, meta } = useData()
   const [content, setContent] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
@@ -102,6 +102,15 @@ export default function SourceViewer({ path, height = 420, showHeader = true }: 
           {pkgDir && (
             <span className="badge info" style={{ fontFamily: 'var(--mono)', fontSize: 10.5 }}>
               {pkgDir.name}
+            </span>
+          )}
+          {meta?.repoCommit && (
+            <span
+              className="badge"
+              title="课程绑定的 Harness 快照 commit"
+              style={{ fontFamily: 'var(--mono)', fontSize: 10.5 }}
+            >
+              Snapshot {meta.repoCommit.slice(0, 7)}
             </span>
           )}
           {file?.commit_hash && file.commit_hash.startsWith('sha256') ? null : file?.commit_hash && (

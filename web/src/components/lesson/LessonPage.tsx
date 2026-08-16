@@ -15,6 +15,7 @@ import SourceEvidence, { type Evidence } from './SourceEvidence'
 import Checkpoint from './Checkpoint'
 import LessonNavigation from './LessonNavigation'
 import RelatedLinks from './RelatedLinks'
+import VersionStatusBanner from './VersionStatusBanner'
 import ConceptCards from '../ConceptCards'
 import { useProgress } from '../../course/useProgress'
 import { useEffect } from 'react'
@@ -59,6 +60,8 @@ export default function LessonPage({ lesson, page, emoji, subtitle, summary, obj
         order={lesson.order}
         minutes={lesson.estimatedMinutes}
       />
+
+      <VersionStatusBanner lesson={lesson} />
 
       <LearningObjectives objectives={finalObjectives} />
 

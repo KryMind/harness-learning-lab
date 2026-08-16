@@ -2114,3 +2114,296 @@ pre.llab-pre {
 .lesson-section {
   padding: 14px 0 4px;
 }
+
+/* ============================================================
+   Version Awareness（Phase 5）—— 安静小徽标，非大横幅（UX#9）
+   ============================================================ */
+.vs-mono {
+  font-family: var(--mono);
+  font-weight: 600;
+}
+
+.vs-state {
+  font-size: 11.5px;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 2px 9px;
+  white-space: nowrap;
+}
+.vs-ok {
+  color: var(--success);
+  background: color-mix(in srgb, var(--success) 10%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--success) 35%, transparent);
+}
+.vs-out {
+  color: var(--warning);
+  background: color-mix(in srgb, var(--warning) 10%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--warning) 40%, transparent);
+}
+.vs-unknown {
+  color: var(--text-3);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  font-weight: 500;
+}
+
+/* 首页顶部状态小条 */
+.vs-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 5px 12px;
+  font-size: 12px;
+  color: var(--text-2);
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: border-color 0.15s;
+}
+.vs-card:hover {
+  border-color: var(--primary);
+  color: var(--text);
+}
+.vs-card .vs-strong {
+  color: var(--text);
+  font-weight: 600;
+}
+.vs-card .vs-sep {
+  color: var(--text-3);
+}
+
+/* 课程页小徽标 + 点击展开 */
+.vs-banner {
+  margin: -4px 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.vs-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 2px 10px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-2);
+  cursor: pointer;
+}
+.vs-badge.vs-warn {
+  color: var(--warning);
+  border-color: color-mix(in srgb, var(--warning) 40%, transparent);
+  background: color-mix(in srgb, var(--warning) 8%, var(--surface));
+}
+.vs-badge.vs-warn:hover {
+  background: color-mix(in srgb, var(--warning) 14%, var(--surface));
+}
+.vs-badge.vs-ok {
+  color: var(--success);
+  cursor: default;
+}
+.vs-badge.vs-dim {
+  color: var(--text-3);
+  cursor: default;
+  font-weight: 500;
+}
+
+.vs-expand {
+  width: 100%;
+  margin-top: 8px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  padding: 12px 14px;
+  font-size: 13px;
+}
+.vse-meta {
+  display: flex;
+  gap: 18px;
+  color: var(--text-2);
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+.vse-title {
+  color: var(--text-3);
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+.vse-files {
+  margin: 0 0 8px;
+  padding-left: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.vse-files li code,
+.vpl-files li code {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-2);
+  background: var(--surface-2);
+  padding: 1px 6px;
+  border-radius: 5px;
+}
+.vse-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: none;
+  background: none;
+  color: var(--primary);
+  font-size: 12.5px;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* /version 差异页 */
+.vp-summary {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-2);
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.vps-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+.vps-label {
+  width: 96px;
+  color: var(--text-3);
+  flex-shrink: 0;
+}
+.vps-sub {
+  color: var(--text-3);
+  font-size: 12px;
+}
+.vps-refresh {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-2);
+  border-radius: 7px;
+  padding: 3px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.vps-refresh:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+}
+.vps-refresh .spin {
+  animation: rot 0.9s linear infinite;
+}
+@keyframes rot {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.vp-note {
+  margin-top: 14px;
+  padding: 10px 14px;
+  border-radius: 9px;
+  border: 1px dashed var(--border);
+  color: var(--text-3);
+  font-size: 12.5px;
+  line-height: 1.7;
+}
+.vp-empty {
+  padding: 18px;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  color: var(--success);
+  font-size: 13px;
+}
+.vp-lessons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.vp-lesson {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  padding: 10px 14px;
+}
+.vpl-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.vpl-name {
+  font-weight: 600;
+  font-size: 13.5px;
+}
+.vpl-count {
+  margin-left: auto;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--warning);
+  background: color-mix(in srgb, var(--warning) 10%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--warning) 40%, transparent);
+  border-radius: 999px;
+  padding: 1px 9px;
+  white-space: nowrap;
+}
+.vpl-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: none;
+  background: none;
+  color: var(--primary);
+  font-size: 12.5px;
+  cursor: pointer;
+  padding: 0;
+}
+.vpl-files {
+  margin: 10px 0 0;
+  padding-left: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.vpl-files li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+.vpl-files li svg {
+  color: var(--text-3);
+  flex-shrink: 0;
+}
+.vp-footer {
+  margin-top: 10px;
+}
+.vp-other {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+.vp-other summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+

@@ -23,6 +23,7 @@ import PermissionPage from './pages/PermissionPage'
 import WebUIPage from './pages/WebUIPage'
 import PackagesPage from './pages/PackagesPage'
 import SourcePage from './pages/SourcePage'
+import VersionPage from './pages/VersionPage'
 import LivePage from './pages/LivePage'
 import PluginGeneratorPage from './pages/PluginGeneratorPage'
 import PlaygroundPage from './pages/PlaygroundPage'
@@ -199,6 +200,7 @@ export default function App() {
             <Route path="/web-ui" element={<WebUIPage />} />
             <Route path="/packages" element={<PackagesPage />} />
             <Route path="/source" element={<SourcePage />} />
+            <Route path="/version" element={<VersionPage />} />
             <Route path="/live" element={<LivePage />} />
             <Route path="/plugin-generator" element={<PluginGeneratorPage />} />
             <Route path="/playground" element={<PlaygroundPage />} />

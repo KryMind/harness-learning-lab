@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom'
 import { ArrowRight, Compass, GraduationCap, Search, FileCode2, GitCompare } from 'lucide-react'
 import { LESSONS, LESSON_GROUPS, lessonById, TOTAL_MINUTES } from '../course/lessons'
 import { useProgress } from '../course/useProgress'
+import VersionStatusCard from '../components/VersionStatusCard'
 
 export default function HomePage() {
   const navigate = useNavigate()
@@ -27,6 +28,7 @@ export default function HomePage() {
     <div className="home">
       {/* ---------- 第一屏：Hero ---------- */}
       <section className="home-hero">
+        <VersionStatusCard />
         <h1 className="hh-title">DeepSeek Harness</h1>
         <p className="hh-sub">
           从「它为什么这么设计」开始理解，而不是背 API。
