@@ -4,7 +4,7 @@
 // 概念由 LESSONS 运行时构建（含中文 aliases）；docs/packages/source 复用已加载的
 // useData() 数据避免重复下载大文件；api 来自 AST 扫描产物（按需 fetch）。
 // ---------------------------------------------------------------------------
-import { buildConceptIndex } from '../course/lessons'
+import { buildConceptIndex, lessonById } from '../course/lessons'
 import type { DocRecord, IndexFile, Meta, PkgRecord } from '../types'
 
 export type SearchType = 'concept' | 'doc' | 'package' | 'api' | 'source'
@@ -103,6 +103,8 @@ export async function buildSearchRecords(opts: {
 
   // 4) API（AST 扫描产物）
   for (const a of await fetchApiSymbols()) {
+    // 官方 API（ctx.*）无单一源码文件 → 跳转到关联课程页；exported-symbol → 跳到源码行
+    const lessonRoute = a.lessonIds?.length ? lessonById(a.lessonIds[0])?.route : undefined
     recs.push({
       id: `api-${a.symbol}`,
       type: 'api',
@@ -113,7 +115,9 @@ export async function buildSearchRecords(opts: {
       sourcePath: a.sourcePath || undefined,
       line: a.line || undefined,
       lessonIds: a.lessonIds,
-      route: a.sourcePath ? `${sourcePathOf(a.sourcePath)}${a.line ? `&line=${a.line}` : ''}` : undefined,
+      route: a.sourcePath
+        ? `${sourcePathOf(a.sourcePath)}${a.line ? `&line=${a.line}` : ''}`
+        : lessonRoute,
     })
   }
 
