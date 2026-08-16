@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom'
 import { Search, Sun, Moon, Menu, X } from 'lucide-react'
 import { SECTIONS, pageByRoute } from './content/pages'
@@ -6,7 +6,8 @@ import { lessonById } from './course/lessons'
 import { useTheme } from './theme'
 import { useData } from './data'
 import { useProgress } from './course/useProgress'
-import type { IndexFile, PkgRecord, DocRecord } from './types'
+import { buildSearchRecords, type SearchRecord } from './data/searchIndex'
+import CommandPalette from './components/search/CommandPalette'
 
 import HomePage from './pages/HomePage'
 import OverviewPage from './pages/OverviewPage'
@@ -32,25 +33,34 @@ export default function App() {
   const location = useLocation()
   const navigate = useNavigate()
   const { progress, completedCount, percent, isCompleted, uiMode, setUiMode } = useProgress()
-  const [q, setQ] = useState('')
-  const [results, setResults] = useState<{ files: IndexFile[]; packages: PkgRecord[]; docs: DocRecord[] } | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [searchRecords, setSearchRecords] = useState<SearchRecord[]>([])
 
   const current = pageByRoute(location.pathname)
 
-  const onSearch = (v: string) => {
-    setQ(v)
-    const s = v.trim().toLowerCase()
-    if (!s) return setResults(null)
-    // 纯前端过滤：直接在已加载的静态数据（repo-index / packages / docs-index）中检索
-    setResults({
-      files: files.filter((f) => f.source_path.toLowerCase().includes(s) || f.title.toLowerCase().includes(s)).slice(0, 20),
-      packages: packages
-        .filter((p) => p.name.toLowerCase().includes(s) || p.dir.toLowerCase().includes(s) || p.description.toLowerCase().includes(s))
-        .slice(0, 8),
-      docs: docs.filter((d) => d.source_path.toLowerCase().includes(s) || d.title.toLowerCase().includes(s)).slice(0, 8),
+  // 应用启动后构建一次统一搜索索引（概念 + docs + packages + api + source）
+  useEffect(() => {
+    let alive = true
+    buildSearchRecords({ files, packages, docs, meta }).then((recs) => {
+      if (alive) setSearchRecords(recs)
     })
-  }
+    return () => {
+      alive = false
+    }
+  }, [files, packages, docs, meta])
+
+  // Ctrl+K / Cmd+K 打开搜索
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        setSearchOpen((o) => !o)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   const gitLabel = useMemo(() => {
     if (!meta?.repoCommit) return null
@@ -163,40 +173,11 @@ export default function App() {
               开发模式
             </button>
           </div>
-          <div className="search-wrap">
+          <button type="button" className="search-trigger" onClick={() => setSearchOpen(true)}>
             <span className="si"><Search size={15} /></span>
-            <input
-              placeholder="搜索源码 / 包 / 文档…"
-              value={q}
-              onChange={(e) => onSearch(e.target.value)}
-              onBlur={() => setTimeout(() => setResults(null), 200)}
-            />
-            {results && (
-              <div className="search-results">
-                {results.files.slice(0, 12).map((f) => (
-                  <div key={'f' + f.source_path} className="sr-item" onMouseDown={() => go(`/source?path=${encodeURIComponent(f.source_path)}`)}>
-                    <span className="badge info sr-kind">源码</span>
-                    <span className="sr-path">{f.source_path}</span>
-                  </div>
-                ))}
-                {results.packages.slice(0, 8).map((p) => (
-                  <div key={'p' + p.dir} className="sr-item" onMouseDown={() => go(`/packages?dir=${encodeURIComponent(p.dir)}`)}>
-                    <span className="badge accent sr-kind">包</span>
-                    <span className="sr-path">{p.name}</span>
-                  </div>
-                ))}
-                {results.docs.slice(0, 8).map((d) => (
-                  <div key={'d' + d.source_path} className="sr-item" onMouseDown={() => go(`/source?path=${encodeURIComponent(d.source_path)}`)}>
-                    <span className="badge success sr-kind">文档</span>
-                    <span className="sr-path">{d.source_path}</span>
-                  </div>
-                ))}
-                {results.files.length + results.packages.length + results.docs.length === 0 && (
-                  <div className="sr-item" style={{ color: 'var(--text-3)' }}>无结果</div>
-                )}
-              </div>
-            )}
-          </div>
+            <span className="search-ph">搜索概念 / API / Package / 源码…</span>
+            <kbd>Ctrl K</kbd>
+          </button>
           <button className="icon-btn" onClick={toggle} title="切换深浅色">
             {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
           </button>
@@ -225,6 +206,8 @@ export default function App() {
           </Routes>
         </div>
       </div>
+
+      <CommandPalette records={searchRecords} open={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>
   )
 }
