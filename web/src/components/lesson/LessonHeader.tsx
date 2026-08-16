@@ -3,6 +3,7 @@
 // 第一屏不出现源码/package/path，保持渐进式信息披露（UX#3）
 // ---------------------------------------------------------------------------
 import { Sparkles } from 'lucide-react'
+import { renderRichText } from '../ApiRef'
 
 interface Props {
   title: string
@@ -28,7 +29,7 @@ export default function LessonHeader({ title, emoji, subtitle, summary, order, m
           {minutes !== undefined && <span className="badge">{minutes} min</span>}
         </div>
       )}
-      <div className="lesson-summary">{summary}</div>
+      <div className="lesson-summary">{renderRichText(summary, `lh-${title}`)}</div>
     </div>
   )
 }

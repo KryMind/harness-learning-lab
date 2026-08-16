@@ -6,9 +6,19 @@ import { useNavigate } from 'react-router-dom'
 import { ArrowRight, BookOpen, Package, Wrench, GraduationCap } from 'lucide-react'
 import type { Lesson } from '../../course/types'
 import { lessonById } from '../../course/lessons'
+import { ApiRef, renderRichText } from '../ApiRef'
 
 interface Props {
   lesson: Lesson
+}
+
+/** 相关 API 的 chip 形态（复用 ApiRef 弹出层） */
+function ApiRefChip({ symbol }: { symbol: string }) {
+  return (
+    <span className="rl-chip">
+      <ApiRef symbol={symbol} />
+    </span>
+  )
 }
 
 export default function RelatedLinks({ lesson }: Props) {
@@ -22,7 +32,7 @@ export default function RelatedLinks({ lesson }: Props) {
             <GraduationCap size={16} />
             这东西以后有什么用？
           </div>
-          <p>{lesson.whyItMatters}</p>
+          <p>{renderRichText(lesson.whyItMatters, `why-${lesson.id}`)}</p>
         </div>
       )}
 
@@ -63,7 +73,7 @@ export default function RelatedLinks({ lesson }: Props) {
             <div className="rl-col">
               <div className="rl-head"><Wrench size={13} /> 相关 API</div>
               {lesson.relatedApis.map((a) => (
-                <code key={a} className="rl-chip">{a}</code>
+                <ApiRefChip key={a} symbol={a} />
               ))}
             </div>
           )}
