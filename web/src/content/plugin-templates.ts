@@ -184,10 +184,10 @@ export function apply(ctx: Context): void {
     emoji: '🧠',
     description: '创建一个 Skill：Bundle 形态（<name>/SKILL.md + reference.md）或 Flat 形态（<name>.md 单文件）。',
     language: 'markdown',
-    sources: [{ path: 'packages/core/skills/src', label: 'packages/core/skills' }],
+    sources: [{ path: 'packages/skill/skill/src', label: 'packages/skill/skill' }],
     docs: [{ path: 'docs/subsystems/skills.md', label: 'docs/subsystems/skills.md' }],
     prerequisites: ['plugin-generator', 'skills'],
-    sourcePaths: ['packages/core/skills/**'],
+    sourcePaths: ['packages/skill/skill/**'],
     nextLearn: { lessonId: 'skills', api: 'ctx.skills', note: 'Skill 的发现与加载机制（Bundle / Flat）' },
     options: [
       {

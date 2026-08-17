@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// SourceEvidence —— 真实源码证据（可选模块，UX#8：默认折叠，开发模式展开）
+// SourceEvidence —— 真实源码证据（可选模块：默认折叠，渐进披露）
 // 只展示最相关的 10-30 行，附 Commit、行号、打开按钮
 // ---------------------------------------------------------------------------
 import { useEffect, useState } from 'react'
@@ -7,7 +7,6 @@ import { useNavigate } from 'react-router-dom'
 import { FileCode2, ExternalLink, ChevronDown, ChevronRight, Crosshair } from 'lucide-react'
 import { useData } from '../../data'
 import { loadSourceContent } from '../../sources'
-import { useProgress } from '../../course/useProgress'
 
 export interface Evidence {
   path: string
@@ -36,16 +35,11 @@ function sliceLines(content: string, lineStart?: number, lineEnd?: number) {
 function EvidenceItem({ ev }: { ev: Evidence }) {
   const navigate = useNavigate()
   const { meta } = useData()
-  const { uiMode } = useProgress()
-  const [open, setOpen] = useState(uiMode === 'developer')
+  const [open, setOpen] = useState(false)
   const [content, setContent] = useState<string | null>(null)
   const [loaded, setLoaded] = useState(false)
 
   const commit = meta?.repoCommit ?? ''
-
-  useEffect(() => {
-    setOpen(uiMode === 'developer')
-  }, [uiMode])
 
   useEffect(() => {
     if (!open || loaded) return
@@ -108,7 +102,7 @@ export default function SourceEvidence({ evidences }: Props) {
     <div className="source-evidence">
       <div className="section-title">
         <h2>📄 真实源码证据</h2>
-        <span className="hint">每个学习结论都能追到官方源码（UX#8：开发模式默认展开）</span>
+        <span className="hint">每个学习结论都能追到官方源码，点击展开</span>
       </div>
       <div className="se-list">
         {evidences.map((ev) => (

@@ -2597,4 +2597,188 @@ pre.llab-pre {
   color: var(--text);
 }
 
+/* ============================================================
+   V0.2 UX/Bug Fix —— 导航重构 / 折叠披露 / Quiz 交互 / 版本轻提示
+   ============================================================ */
+
+/* Sidebar Brand 整块可点击回首页 */
+.sidebar-brand {
+  cursor: pointer;
+}
+.sidebar-brand:hover .name {
+  color: var(--primary);
+}
+.sidebar-brand .name {
+  transition: color 0.15s;
+}
+
+/* 学习首页导航项 */
+.nav-item.home {
+  margin-bottom: 2px;
+}
+.nav-item.home .ic {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+}
+
+/* 开发者参考可折叠分区 */
+.nav-section.toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text-3);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 14px 10px 6px;
+}
+.nav-section.toggle:hover {
+  color: var(--text-2);
+}
+.nav-section.toggle svg {
+  transition: transform 0.15s;
+}
+.nav-section.toggle:not(.open) svg {
+  transform: rotate(-90deg);
+}
+
+/* Topbar breadcrumb 主页可点击 */
+.topbar .crumb-home {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--text);
+  font-weight: 600;
+  font-size: 13px;
+}
+.topbar .crumb-home:hover {
+  color: var(--primary);
+}
+.topbar .crumb-sep {
+  margin: 0 8px;
+  color: var(--text-3);
+}
+
+/* 折叠区（深入理解 / 渐进披露） */
+.collapse {
+  margin: 22px 0 4px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-1);
+  overflow: hidden;
+}
+.collapse-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 11px 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 13.5px;
+  font-weight: 600;
+  text-align: left;
+}
+.collapse-head:hover {
+  background: var(--surface-2);
+}
+.collapse-chevron {
+  display: inline-flex;
+  color: var(--text-3);
+  transition: transform 0.15s;
+}
+.collapse:not(.open) .collapse-chevron {
+  transform: rotate(-90deg);
+}
+.collapse-hint {
+  margin-left: auto;
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--text-3);
+}
+.collapse-body {
+  border-top: 1px solid var(--border);
+  padding: 6px 16px 18px;
+}
+.collapse-sub {
+  margin-top: 14px;
+}
+.collapse-sub-head {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+  margin-bottom: 8px;
+}
+
+/* 首页 Hero 底部版本轻提示（仅过期时显示） */
+.vs-warn-only {
+  display: inline-flex;
+  margin: 18px 0 0;
+  border-color: color-mix(in srgb, var(--warning) 45%, var(--border));
+  color: var(--text-2);
+}
+.vs-warn-only .vs-link {
+  color: var(--warning);
+  font-weight: 600;
+}
+.vs-sep {
+  opacity: 0.5;
+}
+.vs-mono {
+  font-family: var(--mono);
+  font-weight: 600;
+}
+
+/* Quiz：查看答案按钮 + 源码依据 */
+.cq-reveal {
+  margin-top: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.cq-sources {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+.cq-sources-label {
+  font-size: 11px;
+  color: var(--text-3);
+}
+.cq-source {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 5px 9px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: var(--mono);
+  color: var(--primary);
+  line-height: 1.4;
+}
+.cq-source:hover {
+  border-color: var(--primary);
+}
+.cq-source-path {
+  font-size: 10px;
+  color: var(--text-3);
+  font-family: var(--mono);
+}
+
+
 

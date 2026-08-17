@@ -128,7 +128,7 @@ export const tools: PageContent = {
     {
       title: '添加一个工具 = 一个插件',
       icon: '➕',
-      body: '官方 cookbook 演示：defineTool() → ctx.tools.register() → 打包成插件挂进 profile。这是 Playground 页要动手做的事。',
+      body: '官方 cookbook 演示：defineTool() → ctx.tools.register() → 打包成插件挂进 profile。这是 Plugin Code Lab 页要动手做的事。',
       sources: [{ path: 'docs/cookbook/adding-a-tool.md', label: 'adding-a-tool.md' }],
     },
   ],
@@ -149,7 +149,7 @@ export const tools: PageContent = {
     { path: 'docs/tool-catalog.md', label: 'docs/tool-catalog.md' },
     { path: 'docs/subsystems/approval.md', label: 'docs/subsystems/approval.md' },
   ],
-  relatedPages: ['/agent-loop', '/permission', '/playground'],
+  relatedPages: ['/agent-loop', '/permission', '/plugin-code-lab'],
 }
 
 export default tools

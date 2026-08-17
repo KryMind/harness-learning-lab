@@ -29,7 +29,7 @@ export const LESSONS: Lesson[] = [
     title: 'Everything is a Plugin / Cordis',
     description: '一切皆插件，Cordis 是宿主。',
     objectives: ['解释 Plugin 与 ctx', '理解 Cordis 生命周期', '定位 cordis 源码'],
-    sourcePaths: ['docs/architecture.md', 'packages/core/cordis/**'],
+    sourcePaths: ['docs/architecture.md', 'vendor/cordis/**'],
     quizId: 'cordis-basic',
     estimatedMinutes: 10,
     relatedLessons: ['profile'],
@@ -146,7 +146,7 @@ export const LESSONS: Lesson[] = [
     title: 'Subagents',
     description: '主 Agent 如何创建子 Agent。',
     objectives: ['理解 ctx.subagents.start', '理解 SubagentResult', '定位 subagent 源码'],
-    sourcePaths: ['packages/core/subagent/**', 'packages/client/ui-slots/**'],
+    sourcePaths: ['packages/subagent/**'],
     quizId: 'subagent-basic',
     estimatedMinutes: 9,
     relatedLessons: ['workflow'],
@@ -185,7 +185,7 @@ export const LESSONS: Lesson[] = [
     title: 'Permission / Approval / Sandbox',
     description: '安全、审批、沙箱。',
     objectives: ['理解 Approval', '理解权限预设', '理解 Sandbox', '定位 permission 源码'],
-    sourcePaths: ['packages/core/permission/**', 'packages/sandbox/**'],
+    sourcePaths: ['packages/interaction/permission-presets/**', 'packages/sandbox/**'],
     quizId: 'permission-basic',
     estimatedMinutes: 10,
     relatedLessons: ['tools'],
@@ -245,6 +245,26 @@ export const prevLesson = (id: string) =>
   LESSONS.find((l) => l.order === (lessonById(id)?.order ?? 0) - 1)
 export const TOTAL_LESSONS = LESSONS.length
 export const TOTAL_MINUTES = LESSONS.reduce((s, l) => s + (l.estimatedMinutes ?? 0), 0)
+
+/**
+ * 「继续学习」目标课：从 lastLesson 开始向后找第一个未完成课程；
+ * 若之后全部完成，则回到开头找；若全部完成，则指向最后一课（供复习）。
+ */
+export function nextLessonToContinue(
+  lastLessonId: string | null,
+  isDone: (lessonId: string) => boolean,
+) {
+  const ordered = [...LESSONS].sort((a, b) => a.order - b.order)
+  const start = lastLessonId ? ordered.findIndex((l) => l.id === lastLessonId) : -1
+  const from = start >= 0 ? start : 0
+  for (let i = from; i < ordered.length; i++) {
+    if (!isDone(ordered[i].id)) return ordered[i]
+  }
+  for (let i = 0; i < from; i++) {
+    if (!isDone(ordered[i].id)) return ordered[i]
+  }
+  return ordered[ordered.length - 1]
+}
 
 /** 学习主题分组（首页第二屏） */
 export const LESSON_GROUPS: LessonGroup[] = [

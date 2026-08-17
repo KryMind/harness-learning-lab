@@ -106,7 +106,8 @@ export async function buildSearchRecords(opts: {
     // 官方 API（ctx.*）无单一源码文件 → 跳转到关联课程页；exported-symbol → 跳到源码行
     const lessonRoute = a.lessonIds?.length ? lessonById(a.lessonIds[0])?.route : undefined
     recs.push({
-      id: `api-${a.symbol}`,
+      // 大量文件会 export 同名 symbol（Config / apply 等），用 symbol+sourcePath+line 保证唯一
+      id: `api-${a.symbol}-${a.sourcePath || 'official'}-${a.line || 0}`,
       type: 'api',
       title: a.symbol,
       tier: a.tier,

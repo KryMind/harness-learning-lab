@@ -51,7 +51,7 @@ const PATCH = `# 把你的插件挂进 profile（cordis.patch.yml 增行示例�
         enabled: true
 `
 
-export default function PlaygroundPage() {
+export default function PluginCodeLabPage() {
   const { theme } = useTheme()
   const navigate = useNavigate()
   const [code, setCode] = useState(TEMPLATE)
@@ -108,17 +108,18 @@ export default function PlaygroundPage() {
   return (
     <div className="page">
       <div className="hero">
-        <span className="tag">🧪 Playground</span>
-        <h1>自己写一个 Harness Plugin</h1>
+        <span className="tag">🧪 Plugin Code Lab · 插件代码练习</span>
+        <h1>Plugin Code Lab</h1>
         <p className="sub">
+          静态代码预检 + Plugin Tree 模拟，<b>不实际执行 Harness</b>。
           按官方 cookbook 的套路：defineTool() → ctx.tools.register() → 打包成插件挂进 profile。
           execute 返回规范 JSON value，output.schema/render 定义工具契约。
-          下面是可编辑模板与“模拟 profile 组装”预览（本页不真正执行 dsh，只是学习脚手架）。
         </p>
         <div className="learn">
           <span className="learn-chip">模板可编辑</span>
           <span className="learn-chip">静态预检</span>
           <span className="learn-chip">模拟 Plugin Tree</span>
+          <span className="learn-chip">不执行 Harness</span>
           <span className="learn-chip">参考官方 cookbook</span>
         </div>
       </div>
@@ -192,7 +193,7 @@ export default function PlaygroundPage() {
 
       <div className="section-title" style={{ marginTop: 28 }}>
         <h2>④ 模拟 Profile 组装预览</h2>
-        <span className="hint">你的插件将出现在真实 Plugin Tree 的末尾（模拟）</span>
+        <span className="hint">你的插件将出现在真实 Plugin Tree 的末尾（模拟，未真正运行）</span>
       </div>
       <div className="src-list" style={{ marginBottom: 12 }}>
         <button className="btn" onClick={runPreview} disabled={running}>

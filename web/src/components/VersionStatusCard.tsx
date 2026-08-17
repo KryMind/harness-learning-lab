@@ -1,9 +1,8 @@
 // ---------------------------------------------------------------------------
-// VersionStatusCard —— 首页顶部版本状态小条（UX#9：安静小 Badge，非大横幅）
-// DeepSeek Harness · 学习快照 47f9438 · 官方 master a8b32c1 · [✓ 当前 / ⚠ 上游已有更新]
+// VersionStatusCard —— 首页 Hero 底部版本提示（轻量）
+// 仅当官方 master 已有更新（outdated）时显示一行 warning；否则不占视觉空间。
 // 点击 → /version
 // ---------------------------------------------------------------------------
-import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { GitCompare } from 'lucide-react'
 import { useVersionInfo } from '../data/version'
@@ -11,30 +10,27 @@ import { useVersionInfo } from '../data/version'
 export default function VersionStatusCard() {
   const navigate = useNavigate()
   const info = useVersionInfo()
+
+  // 只在官方源码发生变化时轻量提示（学习者的第一视觉不被 commit 信息占据）
+  if (info.status !== 'outdated') return null
+
   const short = info.snapshotCommit ? info.snapshotCommit.slice(0, 7) : null
 
-  let state: ReactNode
-  if (info.status === 'current') {
-    state = <span className="vs-state vs-ok">✓ 当前</span>
-  } else if (info.status === 'outdated') {
-    state = <span className="vs-state vs-out">⚠ 上游已有更新</span>
-  } else {
-    state = <span className="vs-state vs-unknown">官方版本检查暂不可用</span>
-  }
-
   return (
-    <button type="button" className="vs-card" onClick={() => navigate('/version')} title="查看版本差异详情">
+    <button
+      type="button"
+      className="vs-card vs-warn-only"
+      onClick={() => navigate('/version')}
+      title="查看版本差异详情"
+    >
       <GitCompare size={13} />
-      <span className="vs-strong">DeepSeek Harness</span>
+      <span>上游已有更新</span>
       <span className="vs-sep">·</span>
       <span>
-        学习快照 <b className="vs-mono">{short ?? '—'}</b>
+        学习快照 <b className="vs-mono">{short ?? '—'}</b> vs 官方 master{' '}
+        <b className="vs-mono">{info.officialMaster ?? '—'}</b>
       </span>
-      <span className="vs-sep">·</span>
-      <span>
-        官方 master <b className="vs-mono">{info.officialMaster ?? '—'}</b>
-      </span>
-      {state}
+      <span className="vs-link">查看差异 →</span>
     </button>
   )
 }

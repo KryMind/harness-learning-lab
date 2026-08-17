@@ -45,7 +45,7 @@ export default function VersionPage() {
       <div className="hero">
         <span className="tag">🔄 版本差异</span>
         <h1>学习快照 vs 官方 master</h1>
-        <p className="sub">课程内容绑定固定 commit 47f9438。这里展示官方仓库的最新进展，以及哪些课程受上游变化影响。</p>
+        <p className="sub">课程内容绑定固定 commit <b className="vs-mono">{info.snapshotCommit?.slice(0, 7) ?? '—'}</b>。这里展示官方仓库的最新进展，以及哪些课程受上游变化影响。</p>
       </div>
 
       {/* 状态总览 */}

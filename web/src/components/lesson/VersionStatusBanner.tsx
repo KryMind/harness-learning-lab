@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------
-// VersionStatusBanner —— 课程页版本提示小徽标（UX#9：小 Badge + 点击展开，非大横幅）
-// 学习模式只显示小徽标；开发模式默认展开 diff 信息（UX#8 信息密度）
+// VersionStatusBanner —— 课程页版本提示小徽标（小 Badge + 点击展开，非大横幅）
+// 默认折叠；点击徽标展开关联源码 diff 信息。
 // 仅 Plugin Generator 等生成代码可能失效处使用强警告（见 Phase 7）
 // ---------------------------------------------------------------------------
 import { useState } from 'react'
@@ -8,13 +8,11 @@ import { useNavigate } from 'react-router-dom'
 import { RefreshCw } from 'lucide-react'
 import type { Lesson } from '../../course/types'
 import { useVersionInfo, changedFilesForLesson } from '../../data/version'
-import { useProgress } from '../../course/useProgress'
 
 export default function VersionStatusBanner({ lesson }: { lesson: Lesson }) {
   const navigate = useNavigate()
   const info = useVersionInfo()
-  const { uiMode } = useProgress()
-  const [open, setOpen] = useState(uiMode === 'developer')
+  const [open, setOpen] = useState(false)
 
   if (info.status === 'unknown' || !info.changedFiles) {
     return (

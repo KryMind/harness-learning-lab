@@ -1,11 +1,11 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
-import { Routes, Route, useLocation, useNavigate } from 'react-router-dom'
-import { Search, Sun, Moon, Menu, X } from 'lucide-react'
+import { Routes, Route, useLocation, useNavigate, NavLink } from 'react-router-dom'
+import { Search, Sun, Moon, Menu, X, ChevronDown, ChevronRight, Home } from 'lucide-react'
 import { SECTIONS, pageByRoute } from './content/pages'
 import { lessonById } from './course/lessons'
 import { useTheme } from './theme'
 import { useData } from './data'
-import { useProgress } from './course/useProgress'
+import { ProgressProvider, useProgress } from './course/useProgress'
 import { buildSearchRecords, type SearchRecord } from './data/searchIndex'
 import CommandPalette from './components/search/CommandPalette'
 
@@ -27,17 +27,26 @@ const SourcePage = lazy(() => import('./pages/SourcePage'))
 const VersionPage = lazy(() => import('./pages/VersionPage'))
 const RuntimeSnapshotPage = lazy(() => import('./pages/RuntimeSnapshotPage'))
 const PluginGeneratorPage = lazy(() => import('./pages/PluginGeneratorPage'))
-const PlaygroundPage = lazy(() => import('./pages/PlaygroundPage'))
+const PluginCodeLabPage = lazy(() => import('./pages/PluginCodeLabPage'))
 
 export default function App() {
+  return (
+    <ProgressProvider>
+      <AppShell />
+    </ProgressProvider>
+  )
+}
+
+function AppShell() {
   const { theme, toggle } = useTheme()
   const { meta, files, packages, docs } = useData()
   const location = useLocation()
   const navigate = useNavigate()
-  const { progress, completedCount, percent, isCompleted, uiMode, setUiMode } = useProgress()
+  const { progress, completedCount, percent, isCompleted } = useProgress()
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchRecords, setSearchRecords] = useState<SearchRecord[]>([])
+  const [devRefOpen, setDevRefOpen] = useState(true)
 
   const current = pageByRoute(location.pathname)
 
@@ -80,56 +89,105 @@ export default function App() {
       {drawerOpen && <div className="drawer-mask" onClick={() => setDrawerOpen(false)} />}
 
       <aside className={`sidebar ${drawerOpen ? 'open' : ''}`}>
-        <div className="sidebar-brand">
+        <div
+          className="sidebar-brand"
+          role="button"
+          tabIndex={0}
+          title="回到学习首页"
+          onClick={() => go('/')}
+          onKeyDown={(e) => e.key === 'Enter' && go('/')}
+        >
           <div className="logo">⚡</div>
           <div>
             <div className="name">Harness Learning Lab</div>
             <div className="sub">源码驱动的学习地图</div>
           </div>
           {drawerOpen && (
-            <button className="icon-btn drawer-close" onClick={() => setDrawerOpen(false)}>
+            <button
+              className="icon-btn drawer-close"
+              onClick={(e) => {
+                e.stopPropagation()
+                setDrawerOpen(false)
+              }}
+            >
               <X size={16} />
             </button>
           )}
         </div>
 
-        {uiMode === 'learning' && (
-          <div className="sidebar-progress">
-            <div className="sp-label">学习进度</div>
-            <div className="sp-bar"><div className="sp-fill" style={{ width: `${percent}%` }} /></div>
-            <div className="sp-meta">{completedCount} / 12 · {percent}%</div>
-          </div>
-        )}
+        <div className="sidebar-progress">
+          <div className="sp-label">学习进度</div>
+          <div className="sp-bar"><div className="sp-fill" style={{ width: `${percent}%` }} /></div>
+          <div className="sp-meta">{completedCount} / 12 · {percent}%</div>
+        </div>
 
         <nav className="sidebar-nav">
-          {SECTIONS.map((sec) => (
-            <div key={sec.title}>
-              <div className="nav-section">{sec.title}</div>
-              {sec.pages.map((p) => {
-                const lesson = p.lessonId ? lessonById(p.lessonId) : undefined
-                const done = p.lessonId ? isCompleted(p.lessonId) : false
-                const isCurrent = location.pathname === p.route
-                return (
-                  <a
-                    key={p.id}
-                    href={p.route}
-                    onClick={(e) => {
-                      e.preventDefault()
-                      go(p.route)
-                    }}
-                    className={`nav-item ${isCurrent ? 'active' : ''} ${p.lessonId ? 'lesson' : 'ref'} ${done ? 'done' : ''}`}
-                  >
-                    {p.lessonId && lesson && (
-                      <span className="num">{String(lesson.order).padStart(2, '0')}</span>
-                    )}
-                    {!p.lessonId && <span className="ic">{p.emoji}</span>}
-                    <span className="nav-label">{p.navTitle}</span>
-                    {p.lessonId && (done ? <span className="st done">✓</span> : isCurrent ? <span className="st cur">●</span> : <span className="st" />)}
-                  </a>
-                )
-              })}
-            </div>
-          ))}
+          <NavLink
+            to="/"
+            end
+            onClick={() => setDrawerOpen(false)}
+            className={({ isActive }) => `nav-item home ${isActive ? 'active' : ''}`}
+          >
+            <span className="ic"><Home size={14} /></span>
+            <span className="nav-label">学习首页</span>
+          </NavLink>
+
+          {SECTIONS.map((sec) => {
+            const isDevRef = sec.title === '开发者参考'
+            return (
+              <div key={sec.title}>
+                {isDevRef ? (
+                  <>
+                    <button
+                      type="button"
+                      className={`nav-section toggle ${devRefOpen ? 'open' : ''}`}
+                      onClick={() => setDevRefOpen((o) => !o)}
+                    >
+                      {devRefOpen ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
+                      {sec.title}
+                    </button>
+                    {devRefOpen && sec.pages.map((p) => (
+                      <NavLink
+                        key={p.id}
+                        to={p.route}
+                        onClick={() => setDrawerOpen(false)}
+                        className={({ isActive }) => `nav-item ref ${isActive ? 'active' : ''}`}
+                      >
+                        <span className="ic">{p.emoji}</span>
+                        <span className="nav-label">{p.navTitle}</span>
+                      </NavLink>
+                    ))}
+                  </>
+                ) : (
+                  <>
+                    <div className="nav-section">{sec.title}</div>
+                    {sec.pages.map((p) => {
+                      const lesson = p.lessonId ? lessonById(p.lessonId) : undefined
+                      const done = p.lessonId ? isCompleted(p.lessonId) : false
+                      return (
+                        <NavLink
+                          key={p.id}
+                          to={p.route}
+                          onClick={() => setDrawerOpen(false)}
+                          className={({ isActive }) =>
+                            `nav-item lesson ${done ? 'done' : ''} ${isActive ? 'active' : ''}`
+                          }
+                        >
+                          {lesson && <span className="num">{String(lesson.order).padStart(2, '0')}</span>}
+                          <span className="nav-label">{p.navTitle}</span>
+                          {done ? (
+                            <span className="st done">✓</span>
+                          ) : (
+                            <span className="st" />
+                          )}
+                        </NavLink>
+                      )
+                    })}
+                  </>
+                )}
+              </div>
+            )
+          })}
         </nav>
 
         <div className="sidebar-foot">
@@ -146,35 +204,19 @@ export default function App() {
             <Menu size={16} />
           </button>
           <div className="crumb">
-            {current ? (
+            <button type="button" className="crumb-home" onClick={() => go('/')}>
+              Harness Learning Lab
+            </button>
+            {current && (
               <>
-                {current.emoji} <b>{current.title}</b>
-                <span style={{ margin: '0 6px' }}>/</span>
-                <span>{current.subtitle}</span>
+                <span className="crumb-sep">/</span>
+                <span className="crumb-cur">
+                  {current.emoji} {current.title}
+                </span>
               </>
-            ) : (
-              <b>Harness Learning Lab</b>
             )}
           </div>
           <div className="spacer" />
-          <div className="mode-switch" role="tablist" aria-label="界面模式">
-            <button
-              role="tab"
-              aria-selected={uiMode === 'learning'}
-              className={uiMode === 'learning' ? 'active' : ''}
-              onClick={() => setUiMode('learning')}
-            >
-              学习模式
-            </button>
-            <button
-              role="tab"
-              aria-selected={uiMode === 'developer'}
-              className={uiMode === 'developer' ? 'active' : ''}
-              onClick={() => setUiMode('developer')}
-            >
-              开发模式
-            </button>
-          </div>
           <button type="button" className="search-trigger" onClick={() => setSearchOpen(true)}>
             <span className="si"><Search size={15} /></span>
             <span className="search-ph">搜索概念 / API / Package / 源码…</span>
@@ -205,7 +247,7 @@ export default function App() {
               <Route path="/version" element={<VersionPage />} />
               <Route path="/runtime-snapshot" element={<RuntimeSnapshotPage />} />
               <Route path="/plugin-generator" element={<PluginGeneratorPage />} />
-              <Route path="/playground" element={<PlaygroundPage />} />
+              <Route path="/plugin-code-lab" element={<PluginCodeLabPage />} />
               <Route path="*" element={<div className="empty"><div className="big">404</div>页面不存在</div>} />
             </Routes>
           </Suspense>

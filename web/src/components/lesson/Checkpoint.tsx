@@ -1,30 +1,46 @@
 // ---------------------------------------------------------------------------
 // Checkpoint —— 每课小测（必选模块 ④）
-// single / multiple / boolean；第一次答错不给答案，第二次仍错可查看答案（UX#11）
+// single / multiple / boolean
+// - 计分按 questionId 去重：每题答对一次即记 1 分，答错不计入已完成题数
+// - 连续答错两次后出现「查看答案与源码依据」按钮，由用户主动展开
+// - 参考答案附 sourcePaths 源码依据链接
 // ---------------------------------------------------------------------------
 import { useState } from 'react'
-import { Check, X, Award } from 'lucide-react'
-import type { Quiz } from '../../course/types'
+import { useNavigate } from 'react-router-dom'
+import { Check, X, Award, Eye } from 'lucide-react'
+import type { Quiz, Question } from '../../course/types'
 import { useProgress } from '../../course/useProgress'
 
 interface Props {
   quiz: Quiz
 }
 
-function QuestionCard({
-  q,
-  onSubmit,
-}: {
-  q: Quiz['questions'][number]
-  onSubmit: (correct: boolean) => void
-}) {
+function SourceRef({ path }: { path: string }) {
+  const navigate = useNavigate()
+  return (
+    <button
+      type="button"
+      className="cq-source"
+      onClick={() => navigate(`/source?path=${encodeURIComponent(path)}`)}
+      title={`查看源码 ${path}`}
+    >
+      {path.split('/').pop()}
+      <span className="cq-source-path">{path}</span>
+    </button>
+  )
+}
+
+function QuestionCard({ q, onCorrect }: { q: Question; onCorrect: () => void }) {
   const [selected, setSelected] = useState<string[]>([])
-  const [attempts, setAttempts] = useState(0)
+  const [wrongAttempts, setWrongAttempts] = useState(0)
   const [revealed, setRevealed] = useState(false)
   const [feedback, setFeedback] = useState<'none' | 'correct' | 'wrong'>('none')
 
   const isMulti = q.type === 'multiple'
+  const showAnswer = revealed
+
   const toggle = (id: string) => {
+    if (feedback === 'correct') return // 答对后锁定，避免误改
     setSelected((prev) =>
       isMulti
         ? prev.includes(id)
@@ -38,12 +54,9 @@ function QuestionCard({
   const check = () => {
     const correct = q.answer.length === selected.length && q.answer.every((a) => selected.includes(a))
     setFeedback(correct ? 'correct' : 'wrong')
-    setAttempts((a) => a + 1)
-    if (correct) onSubmit(true)
-    else onSubmit(false)
+    if (correct) onCorrect()
+    else setWrongAttempts((a) => a + 1)
   }
-
-  const showAnswer = revealed || attempts >= 2
 
   return (
     <div className="cq-card">
@@ -68,7 +81,7 @@ function QuestionCard({
         })}
       </div>
 
-      {feedback === 'none' && (
+      {feedback !== 'correct' && (
         <button className="btn primary cq-submit" onClick={check} disabled={selected.length === 0}>
           提交
         </button>
@@ -86,16 +99,24 @@ function QuestionCard({
         </div>
       )}
 
-      {feedback === 'wrong' && showAnswer && (
-        <div className="cq-feedback bad with-answer">
-          <X size={15} /> 正确答案已亮出
-          <p className="cq-explain">{q.explanation}</p>
-        </div>
+      {feedback === 'wrong' && wrongAttempts >= 2 && !showAnswer && (
+        <button type="button" className="btn ghost cq-reveal" onClick={() => setRevealed(true)}>
+          <Eye size={14} /> 查看答案与源码依据
+        </button>
       )}
 
-      {showAnswer && !feedback && (
+      {showAnswer && (
         <div className="cq-feedback bad with-answer">
+          <X size={15} /> 参考答案
           <p className="cq-explain">{q.explanation}</p>
+          {q.sourcePaths.length > 0 && (
+            <div className="cq-sources">
+              <span className="cq-sources-label">源码依据</span>
+              {q.sourcePaths.map((sp) => (
+                <SourceRef key={sp} path={sp} />
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -104,21 +125,25 @@ function QuestionCard({
 
 export default function Checkpoint({ quiz }: Props) {
   const { quiz: saveQuiz } = useProgress()
-  const [score, setScore] = useState(0)
-  const [answered, setAnswered] = useState(0)
+  // 按 questionId 去重：同一题只计一次正确
+  const [correctIds, setCorrectIds] = useState<Set<string>>(new Set())
 
-  const onAnswer = (correct: boolean) => {
-    setAnswered((a) => a + 1)
-    if (correct) setScore((s) => s + 1)
+  const onCorrect = (id: string) => {
+    setCorrectIds((prev) => {
+      const next = new Set(prev)
+      next.add(id)
+      return next
+    })
   }
 
-  const allDone = answered >= quiz.questions.length
+  const score = correctIds.size
+  const allDone = score >= quiz.questions.length
 
   return (
     <div className="checkpoint">
       <div className="section-title">
         <h2>🎯 Checkpoint · {quiz.lessonId}</h2>
-        <span className="hint">答对记分；答错两次后可以查看答案与源码解释</span>
+        <span className="hint">每题答对记 1 分；连续答错两次后可主动查看答案与源码依据</span>
       </div>
 
       <div className="cq-score">
@@ -132,7 +157,7 @@ export default function Checkpoint({ quiz }: Props) {
 
       <div className="cq-list">
         {quiz.questions.map((q) => (
-          <QuestionCard key={q.id} q={q} onSubmit={onAnswer} />
+          <QuestionCard key={q.id} q={q} onCorrect={() => onCorrect(q.id)} />
         ))}
       </div>
     </div>

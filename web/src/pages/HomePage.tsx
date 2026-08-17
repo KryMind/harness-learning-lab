@@ -4,7 +4,7 @@
 // ---------------------------------------------------------------------------
 import { useNavigate } from 'react-router-dom'
 import { ArrowRight, Compass, GraduationCap, Search, FileCode2, GitCompare } from 'lucide-react'
-import { LESSONS, LESSON_GROUPS, lessonById, TOTAL_MINUTES } from '../course/lessons'
+import { LESSONS, LESSON_GROUPS, lessonById, TOTAL_MINUTES, nextLessonToContinue } from '../course/lessons'
 import { useProgress } from '../course/useProgress'
 import VersionStatusCard from '../components/VersionStatusCard'
 
@@ -12,9 +12,10 @@ export default function HomePage() {
   const navigate = useNavigate()
   const { progress, completedCount, percent, isCompleted } = useProgress()
 
-  const resume = progress.lastLesson ? lessonById(progress.lastLesson) : undefined
-  const continueRoute = resume?.route ?? '/overview'
-  const continueLabel = resume ? `${resume.shortTitle}` : '第 1 课'
+  const resume = nextLessonToContinue(progress.lastLesson, isCompleted)
+  const continueRoute = resume.route
+  const continueLabel = resume.shortTitle
+  const isFresh = progress.completedLessons.length === 0 && !progress.lastLesson
 
   const remainingMin = Math.max(
     0,
@@ -28,7 +29,6 @@ export default function HomePage() {
     <div className="home">
       {/* ---------- 第一屏：Hero ---------- */}
       <section className="home-hero">
-        <VersionStatusCard />
         <h1 className="hh-title">DeepSeek Harness</h1>
         <p className="hh-sub">
           从「它为什么这么设计」开始理解，而不是背 API。
@@ -38,7 +38,7 @@ export default function HomePage() {
 
         <div className="hh-actions">
           <button className="btn primary" onClick={() => go(continueRoute)}>
-            {progress.lastLesson ? '继续学习' : '开始学习'} {continueLabel} <ArrowRight size={15} />
+            {isFresh ? '开始学习' : '继续学习'} {continueLabel} <ArrowRight size={15} />
           </button>
           <button className="btn ghost" onClick={() => document.getElementById('roadmap')?.scrollIntoView({ behavior: 'smooth' })}>
             浏览学习路线
@@ -50,6 +50,9 @@ export default function HomePage() {
           <div className="hhp-bar"><div className="hhp-fill" style={{ width: `${percent}%` }} /></div>
           <div className="hhp-meta">{completedCount} / {LESSONS.length} 已完成 · 预计剩余约 {remainingMin} 分钟</div>
         </div>
+
+        {/* 版本信息：仅上游变化时在 Hero 底部轻量提示 */}
+        <VersionStatusCard />
       </section>
 
       {/* ---------- 第二屏：学习路线 ---------- */}

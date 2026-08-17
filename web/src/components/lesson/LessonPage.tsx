@@ -86,9 +86,9 @@ export default function LessonPage({ lesson, page, emoji, subtitle, summary, obj
         </div>
       )}
 
-      {finalEvidences.length > 0 && <SourceEvidence evidences={finalEvidences} />}
-
       {quiz && <Checkpoint quiz={quiz} />}
+
+      {finalEvidences.length > 0 && <SourceEvidence evidences={finalEvidences} />}
 
       <RelatedLinks lesson={lesson} />
 

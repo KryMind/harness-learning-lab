@@ -7,6 +7,7 @@ import { lessonById } from '../course/lessons'
 import { quizByLesson } from '../course/quizzes'
 import Graph from '../components/Graph'
 import NodeDrawer from '../components/NodeDrawer'
+import Collapse from '../components/Collapse'
 import { useState } from 'react'
 import type { KGNode } from '../types'
 import { useNavigate } from 'react-router-dom'
@@ -65,21 +66,20 @@ export default function AgentLoopPage() {
       evidences={buildEvidences(agentloop)}
       quiz={quizByLesson('agent-loop')}
     >
-      <div className="section-title">
-        <h2>⏱ 时序图</h2>
-        <span className="hint">durable 事件进 Session 日志，live 事件是扩展点</span>
-      </div>
-      <Mermaid chart={seq} caption="Agent Loop 时序（简化）" />
-
-      <div className="section-title">
-        <h2>🗺 架构图</h2>
-        <span className="hint">点击节点查看详情与源码</span>
-      </div>
-      <Graph
-        nodes={agentloop.nodes}
-        edges={agentloop.edges}
-        onNodeClick={setSelected}
-      />
+      <Collapse title="深入理解 Agent Loop" hint="时序图 / 架构图 / 更多源码，默认折叠">
+        <div className="collapse-sub">
+          <div className="collapse-sub-head">⏱ 查看完整时序图</div>
+          <Mermaid chart={seq} caption="Agent Loop 时序（简化）" />
+        </div>
+        <div className="collapse-sub">
+          <div className="collapse-sub-head">🗺 查看架构关系图</div>
+          <Graph
+            nodes={agentloop.nodes}
+            edges={agentloop.edges}
+            onNodeClick={setSelected}
+          />
+        </div>
+      </Collapse>
       <NodeDrawer
         node={selected}
         onClose={() => setSelected(null)}

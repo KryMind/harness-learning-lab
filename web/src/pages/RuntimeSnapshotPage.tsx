@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ExternalLink, Info, Rocket } from 'lucide-react'
 import RoadmapModal from '../components/RoadmapModal'
+import { useData } from '../data'
 
 /**
  * Runtime Snapshot —— 构建时保存的静态 Plugin / Package / Runtime 结构。
@@ -9,6 +10,7 @@ import RoadmapModal from '../components/RoadmapModal'
  */
 export default function RuntimeSnapshotPage() {
   const navigate = useNavigate()
+  const { meta } = useData()
   const [modalOpen, setModalOpen] = useState(false)
 
   return (
@@ -21,7 +23,7 @@ export default function RuntimeSnapshotPage() {
           静态结构（Profile → Bundle → 插件树）。它不是当前机器上的实时 Harness Runtime。
         </p>
         <div className="learn">
-          <span className="learn-chip">快照来自 commit 47f9438</span>
+          <span className="learn-chip">快照来自 commit {meta?.repoCommit?.slice(0, 7) ?? '—'}</span>
           <span className="learn-chip">纯静态 JSON，无运行时请求</span>
           <span className="learn-chip">Profile 决定机器上的插件树</span>
         </div>
