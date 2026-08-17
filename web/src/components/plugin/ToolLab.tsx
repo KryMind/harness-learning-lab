@@ -1,9 +1,13 @@
+// ---------------------------------------------------------------------------
+// ToolLab —— Plugin Generator 的「Tool 插件练习」Tab（由原 Plugin Code Lab 迁移）
+// 能力：可编辑 Tool Plugin + 基础结构检查 + Profile Patch 编辑 + Plugin Tree 模拟
+// 边界：仅做基础结构检查与学习模拟，不实际运行 Harness。
+// ---------------------------------------------------------------------------
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CheckCircle2, XCircle, Play, Wand2 } from 'lucide-react'
-import { useTheme } from '../theme'
-import SourceViewer from '../components/SourceViewer'
-import MonacoEditor from '../components/MonacoEditor'
+import { useTheme } from '../../theme'
+import MonacoEditor from '../MonacoEditor'
 
 const TEMPLATE = `// my-tool.ts —— 一个最简单的 Harness 工具插件
 // 官方写法：defineTool() + ctx.tools.register()；execute 返回规范 JSON value
@@ -51,7 +55,7 @@ const PATCH = `# 把你的插件挂进 profile（cordis.patch.yml 增行示例�
         enabled: true
 `
 
-export default function PluginCodeLabPage() {
+export default function ToolLab() {
   const { theme } = useTheme()
   const navigate = useNavigate()
   const [code, setCode] = useState(TEMPLATE)
@@ -105,23 +109,15 @@ export default function PluginCodeLabPage() {
     [code],
   )
 
+  const sourceOpen = (path: string) => {
+    navigate(`/source?path=${encodeURIComponent(path)}`)
+  }
+
   return (
-    <div className="page">
-      <div className="hero">
-        <span className="tag">🧪 Plugin Code Lab · 插件代码练习</span>
-        <h1>Plugin Code Lab</h1>
-        <p className="sub">
-          静态代码预检 + Plugin Tree 模拟，<b>不实际执行 Harness</b>。
-          按官方 cookbook 的套路：defineTool() → ctx.tools.register() → 打包成插件挂进 profile。
-          execute 返回规范 JSON value，output.schema/render 定义工具契约。
-        </p>
-        <div className="learn">
-          <span className="learn-chip">模板可编辑</span>
-          <span className="learn-chip">静态预检</span>
-          <span className="learn-chip">模拟 Plugin Tree</span>
-          <span className="learn-chip">不执行 Harness</span>
-          <span className="learn-chip">参考官方 cookbook</span>
-        </div>
+    <div className="lab-tab">
+      <div className="empty" style={{ marginBottom: 20, padding: 16, background: 'var(--bg-warn, rgba(245,158,11,.08))' }}>
+        <b>这里仅做基础结构检查与学习模拟，不会实际运行 Harness。</b>
+        真实安装、加载、Hot Reload 和运行测试将在未来的 <b>Harness Plugin Studio</b> 中完成。
       </div>
 
       <div className="section-title">
@@ -143,8 +139,8 @@ export default function PluginCodeLabPage() {
       />
 
       <div className="section-title" style={{ marginTop: 28 }}>
-        <h2>② 静态预检</h2>
-        <span className="hint">检查插件定义是否满足基本结构</span>
+        <h2>② 基础结构检查</h2>
+        <span className="hint">仅检查插件定义是否满足基本结构，不判断能否运行</span>
       </div>
       <div className="cards">
         <div className="card">
@@ -161,9 +157,14 @@ export default function PluginCodeLabPage() {
           </div>
           {check && (
             <p className="card-body" style={{ marginTop: 10 }}>
-              {check.ok
-                ? <span style={{ color: 'var(--success)' }}><CheckCircle2 size={14} style={{ verticalAlign: -2, marginRight: 4 }} />结构完整，可以尝试注册了。</span>
-                : <span style={{ color: 'var(--danger)' }}><XCircle size={14} style={{ verticalAlign: -2, marginRight: 4 }} />{check.issues.join('；')}</span>}
+              {check.ok ? (
+                <span style={{ color: 'var(--success)' }}>
+                  <CheckCircle2 size={14} style={{ verticalAlign: -2, marginRight: 4 }} />
+                  基础结构完整，未发现明显结构缺失。仍需在 Harness Plugin Studio 中进行真实加载测试。
+                </span>
+              ) : (
+                <span style={{ color: 'var(--danger)' }}><XCircle size={14} style={{ verticalAlign: -2, marginRight: 4 }} />{check.issues.join('；')}</span>
+              )}
             </p>
           )}
         </div>
@@ -171,9 +172,9 @@ export default function PluginCodeLabPage() {
           <div className="card-head"><span className="ic">📚</span><span>官方参考</span></div>
           <p className="card-body">官方 cookbook 的“添加一个工具”教程，以及工具运行时源码。</p>
           <div className="src-list">
-            <button className="src-chip" onClick={() => navigate('/source?path=docs/cookbook/adding-a-tool.md')}>cookbook/adding-a-tool.md</button>
-            <button className="src-chip" onClick={() => navigate('/source?path=packages/core/tools/src/schema.ts')}>tools/schema.ts（defineTool）</button>
-            <button className="src-chip" onClick={() => navigate('/source?path=packages/core/tools/src/index.ts')}>tools/index.ts</button>
+            <button className="src-chip" onClick={() => sourceOpen('docs/cookbook/adding-a-tool.md')}>cookbook/adding-a-tool.md</button>
+            <button className="src-chip" onClick={() => sourceOpen('packages/core/tools/src/schema.ts')}>tools/schema.ts（defineTool）</button>
+            <button className="src-chip" onClick={() => sourceOpen('packages/core/tools/src/index.ts')}>tools/index.ts</button>
           </div>
         </div>
       </div>
@@ -210,12 +211,6 @@ export default function PluginCodeLabPage() {
           </div>
         </div>
       )}
-
-      <div className="section-title" style={{ marginTop: 28 }}>
-        <h2>下一个里程碑：把 Learning Lab 变成插件</h2>
-        <span className="hint">学完 UI 插件与 Slots，就可以做这件事</span>
-      </div>
-      <SourceViewer path="packages/client/ui-slots" height={300} />
     </div>
   )
 }

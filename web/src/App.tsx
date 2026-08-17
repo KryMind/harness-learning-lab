@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
-import { Routes, Route, useLocation, useNavigate, NavLink } from 'react-router-dom'
+import { Routes, Route, useLocation, useNavigate, NavLink, Navigate } from 'react-router-dom'
 import { Search, Sun, Moon, Menu, X, ChevronDown, ChevronRight, Home } from 'lucide-react'
 import { SECTIONS, pageByRoute } from './content/pages'
 import { lessonById } from './course/lessons'
@@ -27,7 +27,6 @@ const SourcePage = lazy(() => import('./pages/SourcePage'))
 const VersionPage = lazy(() => import('./pages/VersionPage'))
 const RuntimeSnapshotPage = lazy(() => import('./pages/RuntimeSnapshotPage'))
 const PluginGeneratorPage = lazy(() => import('./pages/PluginGeneratorPage'))
-const PluginCodeLabPage = lazy(() => import('./pages/PluginCodeLabPage'))
 
 export default function App() {
   return (
@@ -247,7 +246,8 @@ function AppShell() {
               <Route path="/version" element={<VersionPage />} />
               <Route path="/runtime-snapshot" element={<RuntimeSnapshotPage />} />
               <Route path="/plugin-generator" element={<PluginGeneratorPage />} />
-              <Route path="/plugin-code-lab" element={<PluginCodeLabPage />} />
+              {/* 旧入口兼容：/plugin-code-lab 已合并进 Plugin Generator，重定向 */}
+              <Route path="/plugin-code-lab" element={<Navigate to="/plugin-generator" replace />} />
               <Route path="*" element={<div className="empty"><div className="big">404</div>页面不存在</div>} />
             </Routes>
           </Suspense>

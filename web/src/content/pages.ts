@@ -44,7 +44,6 @@ export const SECTIONS: NavSection[] = [
       { id: 'source', route: '/source', emoji: '📂', title: '源码浏览器', navTitle: '源码浏览器', subtitle: '直接阅读官方源码' },
       { id: 'runtime-snapshot', route: '/runtime-snapshot', emoji: '📸', title: 'Runtime Snapshot', navTitle: 'Runtime Snapshot', subtitle: '构建时保存的静态 Plugin 结构' },
       { id: 'version', route: '/version', emoji: '🔄', title: '版本差异', navTitle: '版本差异', subtitle: '学习快照 vs 官方 master' },
-      { id: 'plugin-code-lab', route: '/plugin-code-lab', emoji: '🧪', title: 'Plugin Code Lab', navTitle: 'Plugin Code Lab', subtitle: '静态代码预检 + Plugin Tree 模拟，不实际执行 Harness' },
     ],
   },
 ]

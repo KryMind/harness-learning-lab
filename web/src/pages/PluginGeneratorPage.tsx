@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Check, Copy, Download, ExternalLink, Sparkles } from 'lucide-react'
+import { Check, Copy, Download, ExternalLink, Sparkles, Zap, FlaskConical } from 'lucide-react'
 import { useTheme } from '../theme'
 import MonacoEditor from '../components/MonacoEditor'
+import ToolLab from '../components/plugin/ToolLab'
 import { PLUGIN_TEMPLATES, generateProfilePatch, fileFor } from '../content/plugin-templates'
 import { lessonById } from '../course/lessons'
 import { useProgress } from '../course/useProgress'
@@ -10,6 +11,8 @@ import { useVersionInfo, changedFilesForPaths } from '../data/version'
 
 // 官方名称规则：^[a-z0-9]+(?:-[a-z0-9]+)*$ —— 数字可开头、连字符两端须有字母数字
 const NAME_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+
+type TabId = 'quick' | 'lab'
 
 function defaultsFor(t: (typeof PLUGIN_TEMPLATES)[number]): Record<string, string> {
   const out: Record<string, string> = {}
@@ -20,6 +23,7 @@ function defaultsFor(t: (typeof PLUGIN_TEMPLATES)[number]): Record<string, strin
 export default function PluginGeneratorPage() {
   const { theme } = useTheme()
   const navigate = useNavigate()
+  const [tab, setTab] = useState<TabId>('quick')
   const [typeId, setTypeId] = useState(PLUGIN_TEMPLATES[0].id)
   const [opts, setOpts] = useState<Record<string, string>>(() => defaultsFor(PLUGIN_TEMPLATES[0]))
   const [name, setName] = useState('my-plugin')
@@ -98,6 +102,34 @@ export default function PluginGeneratorPage() {
         </div>
       </div>
 
+      {/* 两个入口：快速生成 / Tool 插件练习（由原 Plugin Code Lab 合并而来） */}
+      <div className="pg-tabs" role="tablist" aria-label="Plugin Generator 功能">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'quick'}
+          className={`pg-tab ${tab === 'quick' ? 'active' : ''}`}
+          onClick={() => setTab('quick')}
+        >
+          <Zap size={14} />
+          快速生成
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'lab'}
+          className={`pg-tab ${tab === 'lab' ? 'active' : ''}`}
+          onClick={() => setTab('lab')}
+        >
+          <FlaskConical size={14} />
+          Tool 插件练习
+        </button>
+      </div>
+
+      {tab === 'lab' ? (
+        <ToolLab />
+      ) : (
+      <>
       {version.status === 'outdated' && changedFilesForPaths(version, tmpl.sourcePaths).length > 0 && (
         <div className="empty" style={{ marginBottom: 20, padding: 16, border: '1px solid rgba(245,158,11,.45)', background: 'var(--bg-warn, rgba(245,158,11,.08))' }}>
           <b>⚠ 模板基于官方快照 {version.snapshotCommit?.slice(0, 7)}。</b>
@@ -312,6 +344,8 @@ export default function PluginGeneratorPage() {
           </div>
         </div>
       </div>
+      </>
+      )}
     </div>
   )
 }

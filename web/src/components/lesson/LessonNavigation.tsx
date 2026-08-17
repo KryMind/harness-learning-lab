@@ -30,7 +30,13 @@ export default function LessonNavigation({ lessonId }: Props) {
             </span>
           </button>
         ) : (
-          <span />
+          <button className="ln-btn" onClick={() => navigate('/')}>
+            <ChevronLeft size={16} />
+            <span>
+              <span className="ln-k">上一节</span>
+              <span className="ln-t">学习首页</span>
+            </span>
+          </button>
         )}
 
         <button

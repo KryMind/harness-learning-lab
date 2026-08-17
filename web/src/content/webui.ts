@@ -166,7 +166,7 @@ export const webui: PageContent = {
     { path: 'docs/subsystems/web.md', label: 'docs/subsystems/web.md' },
     { path: 'docs/web-styling.md', label: 'docs/web-styling.md' },
   ],
-  relatedPages: ['/cordis', '/plugin-code-lab', '/session'],
+  relatedPages: ['/cordis', '/plugin-generator', '/session'],
 }
 
 export default webui

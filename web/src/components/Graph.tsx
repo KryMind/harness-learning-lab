@@ -11,6 +11,7 @@ import {
   type NodeMouseHandler,
 } from '@xyflow/react'
 import { useResponsive } from '../hooks/useResponsive'
+import { useTheme } from '../theme'
 import type { KGNode, KGEdge } from '../types'
 
 export const KIND_LABEL: Record<string, string> = {
@@ -176,6 +177,7 @@ interface GraphProps {
 
 function GraphInner({ nodes, edges, onNodeClick, height }: GraphProps) {
   const { isMobile } = useResponsive()
+  const { theme } = useTheme()
   const positions = useMemo(() => layoutNodes(nodes, edges), [nodes, edges])
 
   const rfNodes: Node[] = useMemo(
@@ -233,7 +235,8 @@ function GraphInner({ nodes, edges, onNodeClick, height }: GraphProps) {
         nodesDraggable={isMobile}
         panOnDrag
         proOptions={{ hideAttribution: true }}
-        colorMode="dark"
+        colorMode={theme}
+        style={{ background: 'transparent' }}
       >
         <Background gap={22} size={1} color="var(--border)" />
         <Controls showInteractive={false} />
