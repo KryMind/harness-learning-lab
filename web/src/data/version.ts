@@ -100,6 +100,19 @@ export function changedCountForLesson(info: VersionInfo, lesson: Lesson): number
   return changedFilesForLesson(info, lesson).length
 }
 
+/** 在 diff 中命中任意前缀路径的文件（用于 Plugin Generator 模板等非课程来源）。 */
+export function changedFilesForPaths(info: VersionInfo, paths: string[]): string[] {
+  if (!info.changedFiles || !paths.length) return []
+  const norm = paths.filter(Boolean)
+  return info.changedFiles.filter((f) => {
+    const m = f.replace(/\\/g, '/')
+    return norm.some((p) => {
+      const pat = p.replace(/\\/g, '/')
+      return pat.endsWith('**') ? m.startsWith(pat.slice(0, -2)) : m.startsWith(pat)
+    })
+  })
+}
+
 /** 读取 snapshot 元数据，挂载后查询一次官方 master。 */
 export function useVersionInfo(): VersionInfo {
   const { meta } = useData()

@@ -4,6 +4,9 @@ import { Check, Copy, Download, ExternalLink, Sparkles } from 'lucide-react'
 import { useTheme } from '../theme'
 import MonacoEditor from '../components/MonacoEditor'
 import { PLUGIN_TEMPLATES, generateProfilePatch, fileFor } from '../content/plugin-templates'
+import { lessonById } from '../course/lessons'
+import { useProgress } from '../course/useProgress'
+import { useVersionInfo, changedFilesForPaths } from '../data/version'
 
 // 官方名称规则：^[a-z0-9]+(?:-[a-z0-9]+)*$ —— 数字可开头、连字符两端须有字母数字
 const NAME_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
@@ -25,6 +28,8 @@ export default function PluginGeneratorPage() {
   const [copiedPatch, setCopiedPatch] = useState(false)
 
   const tmpl = PLUGIN_TEMPLATES.find((t) => t.id === typeId) ?? PLUGIN_TEMPLATES[0]
+  const { isCompleted } = useProgress()
+  const version = useVersionInfo()
 
   const selectType = (id: string) => {
     setTypeId(id)
@@ -93,6 +98,16 @@ export default function PluginGeneratorPage() {
         </div>
       </div>
 
+      {version.status === 'outdated' && changedFilesForPaths(version, tmpl.sourcePaths).length > 0 && (
+        <div className="empty" style={{ marginBottom: 20, padding: 16, border: '1px solid rgba(245,158,11,.45)', background: 'var(--bg-warn, rgba(245,158,11,.08))' }}>
+          <b>⚠ 模板基于官方快照 {version.snapshotCommit?.slice(0, 7)}。</b>
+          该类型的官方源码在上游已有变化（{changedFilesForPaths(version, tmpl.sourcePaths).length} files changed），生成的模板可能已过时。
+          <button type="button" className="btn ghost" style={{ marginLeft: 10 }} onClick={() => navigate('/version')}>
+            查看差异 →
+          </button>
+        </div>
+      )}
+
       <div className="empty" style={{ marginBottom: 20, padding: 16, background: 'var(--bg-warn, rgba(245,158,11,.08))' }}>
         <Sparkles size={15} style={{ verticalAlign: -2, marginRight: 6 }} />
         <b>在线生成仅负责创建插件模板。</b>
@@ -127,6 +142,32 @@ export default function PluginGeneratorPage() {
             <p className="card-body">{t.description}</p>
           </button>
         ))}
+      </div>
+
+      <div className="section-title" style={{ marginTop: 24 }}>
+        <h2>⓪ 生成前，你应该了解</h2>
+        <span className="hint">先掌握这些课程，模板里的 API 才不会陌生</span>
+      </div>
+      <div className="cards">
+        <div className="card">
+          <div className="card-head"><span className="ic">🎓</span><span>前置课程</span></div>
+          <div className="pg-pre">
+            {tmpl.prerequisites.map((lid) => {
+              const l = lessonById(lid)
+              if (!l) return null
+              const done = isCompleted(l.id)
+              return (
+                <div className="pg-pre-item" key={lid}>
+                  <span className={`pg-dot ${done ? 'ok' : ''}`}>{done ? '✓' : '○'}</span>
+                  <span className="pg-name">{l.shortTitle}</span>
+                  <button type="button" className="btn ghost" onClick={() => navigate(l.route)}>
+                    学习 {l.shortTitle}
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        </div>
       </div>
 
       <div className="section-title" style={{ marginTop: 24 }}>
@@ -216,6 +257,34 @@ export default function PluginGeneratorPage() {
         value={patch}
         options={{ readOnly: true, minimap: { enabled: false }, fontSize: 13, fontFamily: "'JetBrains Mono','Fira Code',Consolas,monospace", scrollBeyondLastLine: false }}
       />
+
+      <div className="section-title" style={{ marginTop: 24 }}>
+        <h2>🎓 生成后，下一步理解</h2>
+        <span className="hint">模板里的关键 API 从哪里来</span>
+      </div>
+      <div className="cards">
+        <div className="card">
+          <div className="card-head"><span className="ic">🎯</span><span>{tmpl.nextLearn.api}</span></div>
+          <p className="card-body">{tmpl.nextLearn.note}</p>
+          <div className="src-list">
+            <button
+              type="button"
+              className="src-chip"
+              onClick={() => {
+                const l = lessonById(tmpl.nextLearn.lessonId)
+                navigate(l?.route ?? '/')
+              }}
+            >
+              → 查看 {lessonById(tmpl.nextLearn.lessonId)?.shortTitle ?? '课程'} 课程
+            </button>
+            {tmpl.sources[0] && (
+              <button type="button" className="src-chip" onClick={() => navigate(`/source?path=${encodeURIComponent(tmpl.sources[0].path)}`)}>
+                <ExternalLink size={12} /> {tmpl.sources[0].label ?? tmpl.sources[0].path}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
 
       <div className="section-title" style={{ marginTop: 24 }}>
         <h2>📌 本模板对应的官方来源</h2>

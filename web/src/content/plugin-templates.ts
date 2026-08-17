@@ -39,6 +39,12 @@ export interface PluginTemplate {
   sources: { path: string; label?: string }[]
   /** 对应官方文档路径（可跳转源码浏览器） */
   docs: { path: string; label?: string }[]
+  /** 前置课程（生成前应掌握的 LESSONS id，页面渲染成学习卡片） */
+  prerequisites: string[]
+  /** 对应官方源码路径（用于版本差异匹配 changedFiles） */
+  sourcePaths: string[]
+  /** 生成后「下一步理解」：关联课程 + 关键 API */
+  nextLearn: { lessonId: string; api: string; note: string }
   /** 模板额外选项（如 Skill 的 Bundle/Flat 形态） */
   options?: TemplateOption[]
   /** 生成主预览内容（opts 为已选选项值） */
@@ -124,6 +130,9 @@ export const PLUGIN_TEMPLATES: PluginTemplate[] = [
       { path: 'docs/cookbook/adding-a-tool.md', label: 'cookbook/adding-a-tool.md' },
       { path: 'docs/subsystems/tools.md', label: 'docs/subsystems/tools.md' },
     ],
+    prerequisites: ['plugin-generator', 'tools'],
+    sourcePaths: ['packages/core/tools/**'],
+    nextLearn: { lessonId: 'tools', api: 'ctx.tools.register', note: '工具如何被 Agent 发现、调用与校验' },
     generate: (name, desc, _opts) =>
       `// ${name}.ts —— ${comment(desc || '一个 Harness 工具插件模板')}
 // 官方写法：defineTool() + ctx.tools.register()；execute 返回规范 JSON value
@@ -177,6 +186,9 @@ export function apply(ctx: Context): void {
     language: 'markdown',
     sources: [{ path: 'packages/core/skills/src', label: 'packages/core/skills' }],
     docs: [{ path: 'docs/subsystems/skills.md', label: 'docs/subsystems/skills.md' }],
+    prerequisites: ['plugin-generator', 'skills'],
+    sourcePaths: ['packages/core/skills/**'],
+    nextLearn: { lessonId: 'skills', api: 'ctx.skills', note: 'Skill 的发现与加载机制（Bundle / Flat）' },
     options: [
       {
         id: 'mode',
@@ -202,6 +214,9 @@ export function apply(ctx: Context): void {
       { path: 'packages/subagent/subagent/src/types.ts', label: 'subagent/types.ts（SubagentStartRequest）' },
     ],
     docs: [{ path: 'docs/subsystems/subagent.md', label: 'docs/subsystems/subagent.md' }],
+    prerequisites: ['plugin-generator', 'subagent'],
+    sourcePaths: ['packages/subagent/**'],
+    nextLearn: { lessonId: 'subagent', api: 'ctx.subagents.start', note: '子代理如何派生、由谁执行（spawn / fork / acp）' },
     generate: (name, desc, _opts) =>
       `// ${name}.ts —— ${comment(desc || '一个 Harness 子代理派生模板')}
 // 官方不注册 “SubagentDefinition 对象”：子代理由运行时分派（spawn / fork / acp provider）
@@ -270,6 +285,9 @@ export function apply(ctx: Context): void {
       { path: 'packages/workflow/workflow/src/runtime-types.ts', label: 'workflow（WorkflowStartRequest）' },
     ],
     docs: [{ path: 'docs/subsystems/workflow.md', label: 'docs/subsystems/workflow.md' }],
+    prerequisites: ['plugin-generator', 'workflow'],
+    sourcePaths: ['packages/workflow/**'],
+    nextLearn: { lessonId: 'workflow', api: 'ctx.workflowEngine.start', note: '脚本如何驱动多个 Subagent 编排' },
     generate: (name, desc, _opts) =>
       `// ${name}.js —— Harness JavaScript Workflow（模型生成的编排脚本）
 // 对应官方源码：packages/workflow/tool-workflow/src/index.ts（workflow 工具）
@@ -329,6 +347,9 @@ return { reports, summary }
       { path: 'packages/client/AGENTS.md', label: 'client/AGENTS.md（One API）' },
     ],
     docs: [{ path: 'docs/subsystems/web.md', label: 'docs/subsystems/web.md' }],
+    prerequisites: ['plugin-generator', 'web-ui'],
+    sourcePaths: ['packages/client/ui-slots/**'],
+    nextLearn: { lessonId: 'web-ui', api: 'ctx.slots.register', note: 'UI 插件如何挂进 Web Client 的 SlotMap' },
     generate: (name, desc, _opts) =>
       `// ${name}.tsx —— ${comment(desc || '一个 Web UI 插件模板')}
 // 官方唯一 UI API：ctx.slots.register({ name, children?, store?, inject? }, Component)
@@ -357,6 +378,9 @@ export function apply(ctx: Context): void {
       { path: 'packages/schedule/schedule/src/domain.ts', label: 'schedule/domain.ts（after/at/every）' },
     ],
     docs: [{ path: 'docs/subsystems/schedule.md', label: 'docs/subsystems/schedule.md' }],
+    prerequisites: ['plugin-generator', 'tools'],
+    sourcePaths: ['packages/schedule/**'],
+    nextLearn: { lessonId: 'tools', api: 'ctx.tools.register', note: 'Schedule 也是工具：无 cron，只有三种选择器' },
     generate: (name, desc, _opts) =>
       `// ${name}.ts —— ${comment(desc || '一个 Harness Schedule 工具插件模板')}
 // 官方没有 cron！只有三种选择器：after_seconds / at / every_seconds（every 最小 300 秒）
