@@ -5,6 +5,8 @@ import {
   Background,
   Controls,
   MarkerType,
+  Handle,
+  Position,
   type Node,
   type Edge,
   type NodeProps,
@@ -133,11 +135,14 @@ function LLabNode({ data }: NodeProps) {
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
     >
+      {/* 布局从左到右：target 在左、source 在右；透明但不能 display:none，否则连线不画 */}
+      <Handle type="target" position={Position.Left} className="llab-handle" />
       <div className="nn-row">
         <span className="nn-ic">{icon ?? KIND_EMOJI[kind] ?? '▪'}</span>
         <span className="nn-label">{(data as { label: string }).label}</span>
       </div>
       <div className="nn-kind">{KIND_LABEL[kind] ?? kind}</div>
+      <Handle type="source" position={Position.Right} className="llab-handle" />
       {hover && brief && (
         <div
           style={{

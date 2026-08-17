@@ -1,11 +1,13 @@
 // ---------------------------------------------------------------------------
 // Checkpoint —— 每课小测（必选模块 ④）
 // single / multiple / boolean
-// - 计分按 questionId 去重：每题答对一次即记 1 分，答错不计入已完成题数
+// - completedIds：本题已「完成」——答对 或 主动查看答案（学习过，不再卡住）
+// - correctIds：本题「答对」——只有答对才计入得分
+//   score = correctIds.size；allDone = completedIds.size === questions.length
 // - 连续答错两次后出现「查看答案与源码依据」按钮，由用户主动展开
-// - 参考答案附 sourcePaths 源码依据链接
+// - 全部题目 completed 后自动持久化得分，无需再点「保存」
 // ---------------------------------------------------------------------------
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Check, X, Award, Eye } from 'lucide-react'
 import type { Quiz, Question } from '../../course/types'
@@ -30,7 +32,17 @@ function SourceRef({ path }: { path: string }) {
   )
 }
 
-function QuestionCard({ q, onCorrect }: { q: Question; onCorrect: () => void }) {
+function QuestionCard({
+  q,
+  completed,
+  onCorrect,
+  onReveal,
+}: {
+  q: Question
+  completed: boolean
+  onCorrect: () => void
+  onReveal: () => void
+}) {
   const [selected, setSelected] = useState<string[]>([])
   const [wrongAttempts, setWrongAttempts] = useState(0)
   const [revealed, setRevealed] = useState(false)
@@ -58,6 +70,11 @@ function QuestionCard({ q, onCorrect }: { q: Question; onCorrect: () => void }) 
     else setWrongAttempts((a) => a + 1)
   }
 
+  const reveal = () => {
+    setRevealed(true)
+    onReveal() // 主动查看答案 → 本题标记完成（但不加分）
+  }
+
   return (
     <div className="cq-card">
       <div className="cq-q">
@@ -81,7 +98,7 @@ function QuestionCard({ q, onCorrect }: { q: Question; onCorrect: () => void }) 
         })}
       </div>
 
-      {feedback !== 'correct' && (
+      {feedback !== 'correct' && !completed && (
         <button className="btn primary cq-submit" onClick={check} disabled={selected.length === 0}>
           提交
         </button>
@@ -100,7 +117,7 @@ function QuestionCard({ q, onCorrect }: { q: Question; onCorrect: () => void }) 
       )}
 
       {feedback === 'wrong' && wrongAttempts >= 2 && !showAnswer && (
-        <button type="button" className="btn ghost cq-reveal" onClick={() => setRevealed(true)}>
+        <button type="button" className="btn ghost cq-reveal" onClick={reveal}>
           <Eye size={14} /> 查看答案与源码依据
         </button>
       )}
@@ -125,10 +142,19 @@ function QuestionCard({ q, onCorrect }: { q: Question; onCorrect: () => void }) 
 
 export default function Checkpoint({ quiz }: Props) {
   const { quiz: saveQuiz } = useProgress()
-  // 按 questionId 去重：同一题只计一次正确
+  const [completedIds, setCompletedIds] = useState<Set<string>>(new Set())
   const [correctIds, setCorrectIds] = useState<Set<string>>(new Set())
 
+  const addCompleted = (id: string) => {
+    setCompletedIds((prev) => {
+      const next = new Set(prev)
+      next.add(id)
+      return next
+    })
+  }
+
   const onCorrect = (id: string) => {
+    addCompleted(id)
     setCorrectIds((prev) => {
       const next = new Set(prev)
       next.add(id)
@@ -137,27 +163,42 @@ export default function Checkpoint({ quiz }: Props) {
   }
 
   const score = correctIds.size
-  const allDone = score >= quiz.questions.length
+  const total = quiz.questions.length
+  const allDone = completedIds.size >= total
+
+  // 全部题目 completed 后自动持久化（答对才计分；看过答案的题不计分）
+  useEffect(() => {
+    if (allDone) saveQuiz(quiz.id, score, total)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allDone])
+
+  const hint = useMemo(() => {
+    if (score >= total) return '全对完成'
+    if (allDone) return `已完成 ${completedIds.size} / ${total}，答对 ${score} 题`
+    return `已完成 ${completedIds.size} / ${total}，答对 ${score} 题 · 连续答错两次可查看答案`
+  }, [allDone, score, completedIds.size, total])
 
   return (
     <div className="checkpoint">
       <div className="section-title">
         <h2>🎯 Checkpoint · {quiz.lessonId}</h2>
-        <span className="hint">每题答对记 1 分；连续答错两次后可主动查看答案与源码依据</span>
+        <span className="hint">{hint}</span>
       </div>
 
       <div className="cq-score">
-        <Award size={15} /> 得分 {score} / {quiz.questions.length}
-        {allDone && (
-          <button className="btn ghost mini" onClick={() => saveQuiz(quiz.id, score, quiz.questions.length)}>
-            保存本次得分
-          </button>
-        )}
+        <Award size={15} /> 得分 {score} / {total}
+        {allDone && <span className="cq-done">✓ 已保存</span>}
       </div>
 
       <div className="cq-list">
         {quiz.questions.map((q) => (
-          <QuestionCard key={q.id} q={q} onCorrect={() => onCorrect(q.id)} />
+          <QuestionCard
+            key={q.id}
+            q={q}
+            completed={completedIds.has(q.id)}
+            onCorrect={() => onCorrect(q.id)}
+            onReveal={() => addCompleted(q.id)}
+          />
         ))}
       </div>
     </div>

@@ -870,6 +870,18 @@ code {
 .llab-node.kind-backend { border-color: color-mix(in srgb, var(--success) 55%, transparent); }
 .llab-node.kind-user { border-color: color-mix(in srgb, var(--primary) 60%, transparent); background: color-mix(in srgb, var(--primary) 10%, var(--surface)); }
 
+/* 连线 Handle：必须存在（否则 ReactFlow 不画线），但视觉隐藏 */
+.llab-handle {
+  opacity: 0;
+  pointer-events: none;
+  width: 6px;
+  height: 6px;
+  min-width: 6px;
+  min-height: 6px;
+  border: none;
+  background: transparent;
+}
+
 .react-flow__attribution { display: none; }
 
 /* ---------- 详情抽屉 ---------- */
@@ -1822,6 +1834,11 @@ pre.llab-pre {
   border-radius: 9px;
   padding: 7px 12px;
   margin-bottom: 12px;
+}
+.cq-done {
+  color: var(--success);
+  font-size: 12px;
+  font-weight: 600;
 }
 .cq-list {
   display: flex;

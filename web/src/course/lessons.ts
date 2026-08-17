@@ -12,7 +12,7 @@ export const LESSONS: Lesson[] = [
     title: 'Harness 是什么',
     description: 'Harness 到底是什么，它和 Agent / LLM 的关系。',
     objectives: ['解释 Harness 的定位', '列出核心子系统', '找到总览源码'],
-    sourcePaths: ['docs/architecture.md', 'docs/README.md'],
+    sourcePaths: ['docs/architecture.md', 'docs/module-graph.md'],
     quizId: 'overview-basic',
     estimatedMinutes: 8,
     relatedLessons: ['cordis'],

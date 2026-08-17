@@ -130,7 +130,7 @@ export const PLUGIN_TEMPLATES: PluginTemplate[] = [
       { path: 'docs/cookbook/adding-a-tool.md', label: 'cookbook/adding-a-tool.md' },
       { path: 'docs/subsystems/tools.md', label: 'docs/subsystems/tools.md' },
     ],
-    prerequisites: ['plugin-generator', 'tools'],
+    prerequisites: ['tools'],
     sourcePaths: ['packages/core/tools/**'],
     nextLearn: { lessonId: 'tools', api: 'ctx.tools.register', note: '工具如何被 Agent 发现、调用与校验' },
     generate: (name, desc, _opts) =>
@@ -186,7 +186,7 @@ export function apply(ctx: Context): void {
     language: 'markdown',
     sources: [{ path: 'packages/skill/skill/src', label: 'packages/skill/skill' }],
     docs: [{ path: 'docs/subsystems/skills.md', label: 'docs/subsystems/skills.md' }],
-    prerequisites: ['plugin-generator', 'skills'],
+    prerequisites: ['skills'],
     sourcePaths: ['packages/skill/skill/**'],
     nextLearn: { lessonId: 'skills', api: 'ctx.skills', note: 'Skill 的发现与加载机制（Bundle / Flat）' },
     options: [
@@ -214,7 +214,7 @@ export function apply(ctx: Context): void {
       { path: 'packages/subagent/subagent/src/types.ts', label: 'subagent/types.ts（SubagentStartRequest）' },
     ],
     docs: [{ path: 'docs/subsystems/subagent.md', label: 'docs/subsystems/subagent.md' }],
-    prerequisites: ['plugin-generator', 'subagent'],
+    prerequisites: ['subagent'],
     sourcePaths: ['packages/subagent/**'],
     nextLearn: { lessonId: 'subagent', api: 'ctx.subagents.start', note: '子代理如何派生、由谁执行（spawn / fork / acp）' },
     generate: (name, desc, _opts) =>
@@ -285,7 +285,7 @@ export function apply(ctx: Context): void {
       { path: 'packages/workflow/workflow/src/runtime-types.ts', label: 'workflow（WorkflowStartRequest）' },
     ],
     docs: [{ path: 'docs/subsystems/workflow.md', label: 'docs/subsystems/workflow.md' }],
-    prerequisites: ['plugin-generator', 'workflow'],
+    prerequisites: ['workflow'],
     sourcePaths: ['packages/workflow/**'],
     nextLearn: { lessonId: 'workflow', api: 'ctx.workflowEngine.start', note: '脚本如何驱动多个 Subagent 编排' },
     generate: (name, desc, _opts) =>
@@ -347,7 +347,7 @@ return { reports, summary }
       { path: 'packages/client/AGENTS.md', label: 'client/AGENTS.md（One API）' },
     ],
     docs: [{ path: 'docs/subsystems/web.md', label: 'docs/subsystems/web.md' }],
-    prerequisites: ['plugin-generator', 'web-ui'],
+    prerequisites: ['web-ui'],
     sourcePaths: ['packages/client/ui-slots/**'],
     nextLearn: { lessonId: 'web-ui', api: 'ctx.slots.register', note: 'UI 插件如何挂进 Web Client 的 SlotMap' },
     generate: (name, desc, _opts) =>
@@ -378,7 +378,7 @@ export function apply(ctx: Context): void {
       { path: 'packages/schedule/schedule/src/domain.ts', label: 'schedule/domain.ts（after/at/every）' },
     ],
     docs: [{ path: 'docs/subsystems/schedule.md', label: 'docs/subsystems/schedule.md' }],
-    prerequisites: ['plugin-generator', 'tools'],
+    prerequisites: ['tools'],
     sourcePaths: ['packages/schedule/**'],
     nextLearn: { lessonId: 'tools', api: 'ctx.tools.register', note: 'Schedule 也是工具：无 cron，只有三种选择器' },
     generate: (name, desc, _opts) =>

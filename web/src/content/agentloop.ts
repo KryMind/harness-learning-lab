@@ -80,7 +80,7 @@ export const agentloop: PageContent = {
       id: 'prestep', label: 'agent/pre-step', kind: 'gate',
       brief: '预步瀑布：steering / 注入 / compaction',
       detail: '这是“下一 step 到底做什么”的裁决点。compaction-basic 在这里做压力判断；steering 和上下文注入也走这里。返回 enter 或 reject。',
-      sources: [{ path: 'docs/agent-lifecycle.md', label: 'agent-lifecycle.md' }, { path: 'packages/compaction/basic', label: 'compaction/basic' }],
+      sources: [{ path: 'docs/agent-lifecycle.md', label: 'agent-lifecycle.md' }, { path: 'packages/compaction/compaction-basic', label: 'compaction/compaction-basic' }],
     },
     {
       id: 'prompt', label: 'system-prompt/assemble', kind: 'gate',
@@ -167,7 +167,7 @@ export const agentloop: PageContent = {
     'packages/core/tools',
     'packages/core/session',
     'packages/llm/llm',
-    'packages/compaction/basic',
+    'packages/compaction/compaction-basic',
   ],
   docs: [
     { path: 'docs/agent-lifecycle.md', label: 'docs/agent-lifecycle.md' },

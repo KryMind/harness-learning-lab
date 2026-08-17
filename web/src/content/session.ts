@@ -70,7 +70,7 @@ export const session: PageContent = {
       id: 'compaction', label: '压缩', kind: 'concept',
       brief: 'compaction：超出窗口时压缩历史',
       detail: 'compaction-basic 在 agent/pre-step 触发：判定压力、裁剪工具结果、生成摘要，并把摘要作为新的“源事实”继续追加。',
-      sources: [{ path: 'packages/compaction/basic', label: 'compaction/basic' }],
+      sources: [{ path: 'packages/compaction/compaction-basic', label: 'compaction/compaction-basic' }],
       docs: [{ path: 'docs/subsystems/compaction.md', label: 'compaction.md' }],
     },
     {
@@ -135,7 +135,7 @@ export const session: PageContent = {
     'packages/session/session-title',
     'packages/session-query/session-query',
     'packages/session-query/tool-session-query',
-    'packages/compaction/basic',
+    'packages/compaction/compaction-basic',
   ],
   docs: [
     { path: 'docs/subsystems/session.md', label: 'docs/subsystems/session.md' },
