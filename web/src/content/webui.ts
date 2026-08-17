@@ -133,13 +133,13 @@ export const webui: PageContent = {
     {
       title: '39 个包 = 可裁剪的 UI',
       icon: '🧩',
-      body: '想做一个“只对话不要工作流”的界面？只挂 ui-conversation，不挂 ui-workflow-run 即可。这正是 Longsys AI 定制前端的方式。',
+      body: '想做一个“只对话不要工作流”的界面？只挂 ui-conversation，不挂 ui-workflow-run 即可。这正是按需裁剪前端的方式。',
       sources: [{ path: 'packages/client/AGENTS.md', label: 'client/AGENTS.md' }],
     },
     {
       title: '理解这一层 = 掌握魔改 Harness 的关键',
       icon: '🔑',
-      body: '把 Learning Lab 做成 dsh-learning-lab-plugin 的本质：写一个注册进某 slot 的 UI 插件。看懂 slots 系统就掌握了“怎么把 Harness 魔改成 Longsys AI”的核心技术。',
+      body: '把 Learning Lab 做成 dsh-learning-lab-plugin 的本质：写一个注册进某 slot 的 UI 插件。看懂 slots 系统就掌握了“怎么把 Harness 魔改成自己的 Agent”的核心技术。',
       sources: [{ path: 'packages/client/ui-slots', label: 'ui-slots' }],
     },
   ],

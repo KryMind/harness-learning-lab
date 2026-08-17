@@ -19,7 +19,7 @@ export const LESSONS: Lesson[] = [
     relatedConcepts: ['Agent', 'Plugin'],
     relatedPackages: ['packages/core/agent-loop'],
     whyItMatters:
-      'Longsys AI 的 Agent 体系（接入 OpenMetadata、SQL 查询、业务语义）都建立在同一套「插件 + 执行循环」心智上，这里先建立全局地图。',
+      '无论以后是做自动化、接外部数据服务，还是搭建自己的 Agent，都建立在同一套「插件 + 执行循环」心智上，这里先建立全局地图。',
   },
   {
     id: 'cordis',
@@ -35,7 +35,7 @@ export const LESSONS: Lesson[] = [
     relatedLessons: ['profile'],
     relatedConcepts: ['Plugin', 'ctx', 'Cordis'],
     whyItMatters:
-      '所有 Longsys AI 能力都封装成插件挂进 Profile，理解 Cordis 就理解「能力如何被宿主启动与组合」。',
+      '任何想复用的能力都可以封装成插件挂进 Profile，理解 Cordis 就理解「能力如何被宿主启动与组合」。',
   },
   {
     id: 'profile',
@@ -51,7 +51,7 @@ export const LESSONS: Lesson[] = [
     relatedLessons: ['agent-loop'],
     relatedConcepts: ['Profile', 'Bundle'],
     whyItMatters:
-      '部署 Longsys AI 实例（如 openmetadata 技能栈、SQL Agent）就是在组装 Profile，这一课是配置的底层语法。',
+      '部署一个可用的 Agent 实例就是在组装 Profile，这一课是配置的底层语法。',
   },
   {
     id: 'agent-loop',
@@ -73,7 +73,7 @@ export const LESSONS: Lesson[] = [
     relatedConcepts: ['Turn', 'Step', 'Tool Call', 'Session Event'],
     relatedApis: ['ctx.agents', 'ctx.agentLoop'],
     whyItMatters:
-      '所有 Agent 行为（查库、调 OpenMetadata、多步推理）本质都是「模型 + 工具循环」，这是调试与设计一切 Longsys AI Agent 的核心。',
+      '所有 Agent 行为（调用工具、多步推理）本质都是「模型 + 工具循环」，这是调试与设计一切 Agent 的核心。',
   },
   {
     id: 'session',
@@ -90,7 +90,7 @@ export const LESSONS: Lesson[] = [
     relatedConcepts: ['Session Event'],
     relatedPackages: ['packages/core/session'],
     whyItMatters:
-      'Longsys AI 的审计与可追溯（谁问了什么、工具做了什么）依赖 Session 事件，是合规与排查的单一事实源。',
+      'Agent 的审计与可追溯（谁问了什么、工具做了什么）依赖 Session 事件，是合规与排查的单一事实源。',
   },
   {
     id: 'tools',
@@ -113,7 +113,7 @@ export const LESSONS: Lesson[] = [
     relatedPackages: ['packages/core/tools'],
     relatedApis: ['ctx.tools.register'],
     whyItMatters:
-      '把 OpenMetadata、Semantic Orchestrator、SQL 查询 API 接入 Longsys AI，本质上都需要理解这一层 —— Tool 是外部能力的标准入口。',
+      '想给 Agent 接外部能力，都需要理解这一层 —— Tool 是外部能力的标准入口。',
   },
   {
     id: 'skills',
@@ -136,7 +136,7 @@ export const LESSONS: Lesson[] = [
     relatedPackages: ['packages/skill/skill', 'packages/skill/tool-skill'],
     relatedApis: ['ctx.skills'],
     whyItMatters:
-      'Longsys AI 不同业务 Agent 的分析策略、开发规范、领域知识，都可以通过 Skills 统一管理与注入，是「知识进系统」的入口。',
+      '不同的分析策略、开发规范、领域知识，都可以通过 Skills 统一管理与注入，是「知识进系统」的入口。',
   },
   {
     id: 'subagent',
@@ -153,7 +153,7 @@ export const LESSONS: Lesson[] = [
     relatedConcepts: ['Subagent'],
     relatedApis: ['ctx.subagents.start'],
     whyItMatters:
-      '复杂任务拆给多个专职 Agent 并行处理，是 Longsys AI 业务场景（多数据源调研）的常用协作模式。',
+      '复杂任务拆给多个专职 Agent 并行处理，是大型任务的常用协作模式。',
   },
   {
     id: 'workflow',
@@ -175,7 +175,7 @@ export const LESSONS: Lesson[] = [
     relatedConcepts: ['Workflow'],
     relatedApis: ['ctx.workflowEngine.start'],
     whyItMatters:
-      '复杂任务的 Subagent 并行与阶段式编排（调研→分析→总结）用 Workflow 表达，是业务级编排的标准手段。',
+      '复杂任务的 Subagent 并行与阶段式编排（调研→分析→总结）用 Workflow 表达，是任务级编排的标准手段。',
   },
   {
     id: 'permission',
@@ -191,7 +191,7 @@ export const LESSONS: Lesson[] = [
     relatedLessons: ['tools'],
     relatedConcepts: ['Approval', 'Permission', 'Sandbox'],
     whyItMatters:
-      '给 Longsys AI 接真实数据源前，必须先设计「什么工具需要审批、跑在什么沙箱里」，这一课决定安全边界。',
+      '让 Agent 真正接触外部资源前，必须先设计「什么工具需要审批、跑在什么沙箱里」，这一课决定安全边界。',
   },
   {
     id: 'web-ui',
@@ -229,7 +229,7 @@ export const LESSONS: Lesson[] = [
     relatedLessons: ['tools', 'workflow'],
     relatedConcepts: ['Plugin', 'Tool', 'Workflow', 'Schedule'],
     relatedApis: ['ctx.tools.register', 'ctx.slots.register'],
-    whyItMatters: '把前 11 课的知识变成「能跑的插件骨架」，是 Longsys AI 能力落地的第一步。',
+    whyItMatters: '把前 11 课的知识变成「能跑的插件骨架」，是自建 Agent 能力落地的第一步。',
   },
 ]
 

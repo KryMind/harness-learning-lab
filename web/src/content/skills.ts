@@ -113,7 +113,7 @@ export const skills: PageContent = {
     {
       title: 'Provider 可替换',
       icon: '🔁',
-      body: '技能来源不锁死本地文件系统：remote / embedded Provider 只要实现同一服务接口就能挂进来。这为 Longsys AI 接入企业知识库技能预留了接口。',
+      body: '技能来源不锁死本地文件系统：remote / embedded Provider 只要实现同一服务接口就能挂进来。这为接入更多技能来源预留了接口。',
       sources: [{ path: 'packages/skill/skill/src/index.ts', label: 'skill/skill' }],
     },
   ],

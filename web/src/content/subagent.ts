@@ -115,7 +115,7 @@ export const subagent: PageContent = {
     {
       title: 'Provider 即扩展点',
       icon: '🔌',
-      body: '想让 Harness 把子任务派给任何外部 Agent，只需实现一个 Provider：ACP / Codex / Claude Code / dsh-sdk 已证明这一点。这正好是 Longsys AI 集成第三方智能体的入口。',
+      body: '想让 Harness 把子任务派给任何外部 Agent，只需实现一个 Provider：ACP / Codex / Claude Code / dsh-sdk 已证明这一点。这正好是集成第三方智能体的入口。',
       sources: [{ path: 'packages/subagent/subagent', label: 'subagent' }],
     },
     {

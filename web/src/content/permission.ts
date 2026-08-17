@@ -119,7 +119,7 @@ export const permission: PageContent = {
     {
       title: '审批也是 durable 事件',
       icon: '🧾',
-      body: 'approval/asked 与 approval/decided 进 Session 日志 —— “谁批准了什么”可审计。这正是未来 Longsys AI 审计页面的数据基础。',
+      body: 'approval/asked 与 approval/decided 进 Session 日志 —— “谁批准了什么”可审计。这正是未来审计 / 监控类页面的数据基础。',
       sources: [{ path: 'packages/interaction/user-approval', label: 'user-approval' }],
     },
   ],
