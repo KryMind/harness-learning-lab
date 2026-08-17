@@ -132,7 +132,7 @@ export const profile: PageContent = {
     { path: 'docs/architecture.md', label: 'docs/architecture.md' },
     { path: 'docs/config-catalog.md', label: 'docs/config-catalog.md' },
   ],
-  relatedPages: ['/cordis', '/live', '/agent-loop'],
+  relatedPages: ['/cordis', '/runtime-snapshot', '/agent-loop'],
 }
 
 export default profile

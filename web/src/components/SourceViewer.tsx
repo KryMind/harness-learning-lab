@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
-import Editor from '@monaco-editor/react'
 import { Check, Copy, FileCode2 } from 'lucide-react'
 import { loadSourceContent } from '../sources'
 import { useTheme } from '../theme'
 import { useData } from '../data'
+import { useResponsive } from '../hooks/useResponsive'
+import MonacoEditor from './MonacoEditor'
 import { KIND_COLOR } from './Graph'
 
 export const EXT_LANG: Record<string, string> = {
@@ -35,9 +36,13 @@ interface SourceViewerProps {
 export default function SourceViewer({ path, height = 420, showHeader = true }: SourceViewerProps) {
   const { theme } = useTheme()
   const { fileByPath, packageByDir, meta } = useData()
+  const { isMobile } = useResponsive()
   const [content, setContent] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  // 移动端：默认只渲染前几行预览，点击「打开完整源码」后才懒加载 Monaco
+  const [full, setFull] = useState(false)
+  const PREVIEW_LINES = 24
 
   useEffect(() => {
     setContent(null)
@@ -125,8 +130,20 @@ export default function SourceViewer({ path, height = 420, showHeader = true }: 
       )}
       {content == null ? (
         <div className="empty" style={{ padding: 40 }}>加载中…</div>
+      ) : isMobile && !full ? (
+        <div className="code-mobile">
+          <pre className="code-preview">
+            {content.split('\n').slice(0, PREVIEW_LINES).join('\n')}
+            {content.split('\n').length > PREVIEW_LINES ? '\n…' : ''}
+          </pre>
+          {content.split('\n').length > PREVIEW_LINES && (
+            <button type="button" className="btn ghost code-full" onClick={() => setFull(true)}>
+              打开完整源码（{content.split('\n').length} 行）
+            </button>
+          )}
+        </div>
       ) : (
-        <Editor
+        <MonacoEditor
           height={height}
           language={lang}
           value={content}

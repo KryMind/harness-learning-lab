@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import Editor from '@monaco-editor/react'
 import { CheckCircle2, XCircle, Play, Wand2 } from 'lucide-react'
 import { useTheme } from '../theme'
 import SourceViewer from '../components/SourceViewer'
+import MonacoEditor from '../components/MonacoEditor'
 
 const TEMPLATE = `// my-tool.ts —— 一个最简单的 Harness 工具插件
 // 官方写法：defineTool() + ctx.tools.register()；execute 返回规范 JSON value
@@ -127,7 +127,7 @@ export default function PlaygroundPage() {
         <h2>① 工具插件模板</h2>
         <span className="hint">参考 packages/core/tools/schema.ts 的 defineTool 结构；可直接修改</span>
       </div>
-      <Editor
+      <MonacoEditor
         height={360}
         language="typescript"
         theme={theme === 'dark' ? 'vs-dark' : 'light'}
@@ -181,7 +181,7 @@ export default function PlaygroundPage() {
         <h2>③ 挂进 Profile（cordis.patch.yml）</h2>
         <span className="hint">可编辑；配置行与 dsh-base 的 cordis.patch.yml 同构</span>
       </div>
-      <Editor
+      <MonacoEditor
         height={220}
         language="yaml"
         theme={theme === 'dark' ? 'vs-dark' : 'light'}

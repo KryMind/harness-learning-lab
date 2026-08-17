@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom'
 import { Search, Sun, Moon, Menu, X } from 'lucide-react'
 import { SECTIONS, pageByRoute } from './content/pages'
@@ -9,24 +9,25 @@ import { useProgress } from './course/useProgress'
 import { buildSearchRecords, type SearchRecord } from './data/searchIndex'
 import CommandPalette from './components/search/CommandPalette'
 
-import HomePage from './pages/HomePage'
-import OverviewPage from './pages/OverviewPage'
-import CordisPage from './pages/CordisPage'
-import ProfilePage from './pages/ProfilePage'
-import AgentLoopPage from './pages/AgentLoopPage'
-import SessionPage from './pages/SessionPage'
-import ToolsPage from './pages/ToolsPage'
-import SkillsPage from './pages/SkillsPage'
-import SubagentPage from './pages/SubagentPage'
-import WorkflowPage from './pages/WorkflowPage'
-import PermissionPage from './pages/PermissionPage'
-import WebUIPage from './pages/WebUIPage'
-import PackagesPage from './pages/PackagesPage'
-import SourcePage from './pages/SourcePage'
-import VersionPage from './pages/VersionPage'
-import LivePage from './pages/LivePage'
-import PluginGeneratorPage from './pages/PluginGeneratorPage'
-import PlaygroundPage from './pages/PlaygroundPage'
+// 懒加载页面路由（Phase 6 性能）：按需拉取对应页面 chunk
+const HomePage = lazy(() => import('./pages/HomePage'))
+const OverviewPage = lazy(() => import('./pages/OverviewPage'))
+const CordisPage = lazy(() => import('./pages/CordisPage'))
+const ProfilePage = lazy(() => import('./pages/ProfilePage'))
+const AgentLoopPage = lazy(() => import('./pages/AgentLoopPage'))
+const SessionPage = lazy(() => import('./pages/SessionPage'))
+const ToolsPage = lazy(() => import('./pages/ToolsPage'))
+const SkillsPage = lazy(() => import('./pages/SkillsPage'))
+const SubagentPage = lazy(() => import('./pages/SubagentPage'))
+const WorkflowPage = lazy(() => import('./pages/WorkflowPage'))
+const PermissionPage = lazy(() => import('./pages/PermissionPage'))
+const WebUIPage = lazy(() => import('./pages/WebUIPage'))
+const PackagesPage = lazy(() => import('./pages/PackagesPage'))
+const SourcePage = lazy(() => import('./pages/SourcePage'))
+const VersionPage = lazy(() => import('./pages/VersionPage'))
+const RuntimeSnapshotPage = lazy(() => import('./pages/RuntimeSnapshotPage'))
+const PluginGeneratorPage = lazy(() => import('./pages/PluginGeneratorPage'))
+const PlaygroundPage = lazy(() => import('./pages/PlaygroundPage'))
 
 export default function App() {
   const { theme, toggle } = useTheme()
@@ -185,27 +186,29 @@ export default function App() {
         </header>
 
         <div className="content">
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/overview" element={<OverviewPage />} />
-            <Route path="/cordis" element={<CordisPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/agent-loop" element={<AgentLoopPage />} />
-            <Route path="/session" element={<SessionPage />} />
-            <Route path="/tools" element={<ToolsPage />} />
-            <Route path="/skills" element={<SkillsPage />} />
-            <Route path="/subagent" element={<SubagentPage />} />
-            <Route path="/workflow" element={<WorkflowPage />} />
-            <Route path="/permission" element={<PermissionPage />} />
-            <Route path="/web-ui" element={<WebUIPage />} />
-            <Route path="/packages" element={<PackagesPage />} />
-            <Route path="/source" element={<SourcePage />} />
-            <Route path="/version" element={<VersionPage />} />
-            <Route path="/live" element={<LivePage />} />
-            <Route path="/plugin-generator" element={<PluginGeneratorPage />} />
-            <Route path="/playground" element={<PlaygroundPage />} />
-            <Route path="*" element={<div className="empty"><div className="big">404</div>页面不存在</div>} />
-          </Routes>
+          <Suspense fallback={<div className="page-loading">加载中…</div>}>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/overview" element={<OverviewPage />} />
+              <Route path="/cordis" element={<CordisPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/agent-loop" element={<AgentLoopPage />} />
+              <Route path="/session" element={<SessionPage />} />
+              <Route path="/tools" element={<ToolsPage />} />
+              <Route path="/skills" element={<SkillsPage />} />
+              <Route path="/subagent" element={<SubagentPage />} />
+              <Route path="/workflow" element={<WorkflowPage />} />
+              <Route path="/permission" element={<PermissionPage />} />
+              <Route path="/web-ui" element={<WebUIPage />} />
+              <Route path="/packages" element={<PackagesPage />} />
+              <Route path="/source" element={<SourcePage />} />
+              <Route path="/version" element={<VersionPage />} />
+              <Route path="/runtime-snapshot" element={<RuntimeSnapshotPage />} />
+              <Route path="/plugin-generator" element={<PluginGeneratorPage />} />
+              <Route path="/playground" element={<PlaygroundPage />} />
+              <Route path="*" element={<div className="empty"><div className="big">404</div>页面不存在</div>} />
+            </Routes>
+          </Suspense>
         </div>
       </div>
 

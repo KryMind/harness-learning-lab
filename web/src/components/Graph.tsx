@@ -10,6 +10,7 @@ import {
   type NodeProps,
   type NodeMouseHandler,
 } from '@xyflow/react'
+import { useResponsive } from '../hooks/useResponsive'
 import type { KGNode, KGEdge } from '../types'
 
 export const KIND_LABEL: Record<string, string> = {
@@ -174,6 +175,7 @@ interface GraphProps {
 }
 
 function GraphInner({ nodes, edges, onNodeClick, height }: GraphProps) {
+  const { isMobile } = useResponsive()
   const positions = useMemo(() => layoutNodes(nodes, edges), [nodes, edges])
 
   const rfNodes: Node[] = useMemo(
@@ -226,8 +228,10 @@ function GraphInner({ nodes, edges, onNodeClick, height }: GraphProps) {
         nodeTypes={{ llab: LLabNode }}
         fitView
         fitViewOptions={{ padding: 0.18 }}
-        minZoom={0.3}
+        minZoom={isMobile ? 0.2 : 0.3}
         maxZoom={1.6}
+        nodesDraggable={isMobile}
+        panOnDrag
         proOptions={{ hideAttribution: true }}
         colorMode="dark"
       >

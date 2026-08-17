@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import Editor from '@monaco-editor/react'
 import { Check, Copy, Download, ExternalLink, Sparkles } from 'lucide-react'
 import { useTheme } from '../theme'
+import MonacoEditor from '../components/MonacoEditor'
 import { PLUGIN_TEMPLATES, generateProfilePatch, fileFor } from '../content/plugin-templates'
 
 // 官方名称规则：^[a-z0-9]+(?:-[a-z0-9]+)*$ —— 数字可开头、连字符两端须有字母数字
@@ -191,7 +191,7 @@ export default function PluginGeneratorPage() {
           </button>
         </span>
       </div>
-      <Editor
+      <MonacoEditor
         height={360}
         language={tmpl.language}
         theme={theme === 'dark' ? 'vs-dark' : 'light'}
@@ -209,7 +209,7 @@ export default function PluginGeneratorPage() {
           </button>
         </span>
       </div>
-      <Editor
+      <MonacoEditor
         height={200}
         language="yaml"
         theme={theme === 'dark' ? 'vs-dark' : 'light'}

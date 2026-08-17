@@ -137,7 +137,7 @@ export const permission: PageContent = {
     { path: 'docs/subsystems/approval.md', label: 'docs/subsystems/approval.md' },
     { path: 'docs/subsystems/shell.md', label: 'docs/subsystems/shell.md' },
   ],
-  relatedPages: ['/tools', '/agent-loop', '/live'],
+  relatedPages: ['/tools', '/agent-loop', '/runtime-snapshot'],
 }
 
 export default permission
