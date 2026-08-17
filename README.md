@@ -15,14 +15,13 @@
 Harness Learning Lab 是一个**纯静态学习网站**，面向第一次接触 Harness 的初学者：
 
 - **12 门渐进式课程**：每课按「一句话理解 → 学习目标 → 可视化 → 互动 → 源码证据 → 小测」组织，一次只讲透一个概念
-- **源码驱动**：每个知识点都映射到官方源码的真实路径，浏览器内直接阅读（Monaco 高亮）
+- **源码驱动**：每个知识点都映射到官方源码，浏览器内直接阅读（Monaco 高亮）
 - **Agent Loop**：一次提问的完整生命周期（动画 + 时序图）
 - **Command Palette 全局搜索**（Ctrl+K）：概念 > 公共 API > Package/Docs > 源码，按相关性排序
-- **版本感知**：课程绑定官方源码快照 commit，`/version` 页动态对比官方 `master` 差异
+- **版本感知**：课程绑定官方源码快照，动态对比官方 `master` 差异
 - **Plugin Generator**：纯浏览器端在线生成插件模板（Tool / Skill / Subagent / Workflow / Web UI / Schedule）
 - **Tool 插件练习**：在 Plugin Generator 内编辑 Tool 插件、做基础结构检查与 Plugin Tree 模拟（不实际执行 Harness）
 - **学习进度**：localStorage 本地记录，随用随存，无需账号
-- **深浅色模式 + 移动端适配**（900px 以下抽屉导航）
 
 ### 课程一览
 
@@ -92,19 +91,6 @@ pnpm generate
 pnpm build      # 生成 GitHub Pages 可部署的静态站（web/dist）
 pnpm preview    # 本地预览生产构建（http://localhost:4173/）
 ```
-
-## 部署到 GitHub Pages
-
-1. 在 GitHub 新建仓库，把本目录推上去（`deepseek-harness/` 与 `node_modules/` 已被 `.gitignore` 排除）。
-2. 仓库 Settings → Pages → Source 选择 **GitHub Actions**。
-3. push 到 `main` 分支，或手动触发 Actions 的 `Deploy to GitHub Pages`。
-
-Workflow 位于 `.github/workflows/deploy-pages.yml`：
-
-- `pnpm install --frozen-lockfile` → `pnpm build` → 官方 Actions 上传并部署
-- 部署到子路径 `https://<user>.github.io/<repo>/`
-- 前端使用 **HashRouter**，`/#/overview` 这类子路由刷新不会 404
-- Vite `base` 由 CI 环境变量 `HLL_BASE_URL=/<repo>/` 动态设置（本地默认 `/`，不硬编码仓库名）
 
 ## 与 Harness Plugin Studio 的边界
 
