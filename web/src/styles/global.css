@@ -822,6 +822,51 @@ code {
   padding: 4px 10px;
   backdrop-filter: blur(6px);
 }
+/* 关系文字开关（智能显示 / 全部显示），置于左上角，避免与右上角图例重叠 */
+.graph-label-toggle {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 3px 6px;
+  backdrop-filter: blur(6px);
+  font-size: 11px;
+  color: var(--text-3);
+}
+.graph-label-toggle .tt {
+  padding: 0 4px;
+  user-select: none;
+}
+.graph-label-toggle button {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-3);
+  font-size: 11px;
+  line-height: 1.4;
+  padding: 2px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+.graph-label-toggle button:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+.graph-label-toggle button.on {
+  background: color-mix(in srgb, var(--primary) 15%, transparent);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+/* 聚焦时非关联节点轻微降透明度（不隐藏） */
+.llab-node.dimmed {
+  opacity: 0.35;
+}
 .llab-node {
   border-radius: 9px;
   border: 1px solid var(--border);
@@ -832,7 +877,7 @@ code {
   min-width: 110px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
   cursor: pointer;
-  transition: transform 0.12s, box-shadow 0.12s;
+  transition: transform 0.12s, box-shadow 0.12s, opacity 0.18s;
   user-select: none;
 }
 .llab-node:hover {

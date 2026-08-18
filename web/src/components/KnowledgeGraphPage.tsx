@@ -137,7 +137,7 @@ export default function KnowledgeGraphPage({ content, graphTitle, lesson }: Prop
     page: content,
     emoji: content.emoji,
     subtitle: content.subtitle,
-    summary: (content.hero ?? []).join(' ').slice(0, 160) || lesson.description,
+    summary: content.hero?.[0] ?? lesson.description,
     objectives: content.learn,
     concepts: content.concepts,
     evidences: buildEvidences(content),
@@ -150,7 +150,13 @@ export default function KnowledgeGraphPage({ content, graphTitle, lesson }: Prop
         <h2>🗺 架构图</h2>
         <span className="hint">{graphTitle ?? '点击节点查看详情与源码'}</span>
       </div>
-      <Graph nodes={content.nodes} edges={content.edges} onNodeClick={setSelected} />
+      <Graph
+        nodes={content.nodes}
+        edges={content.edges}
+        onNodeClick={setSelected}
+        selectedNodeId={selected?.id ?? null}
+        onPaneClick={() => setSelected(null)}
+      />
       <NodeDrawer node={selected} onClose={() => setSelected(null)} onOpenSource={openSource} />
 
       {content.mermaid && (

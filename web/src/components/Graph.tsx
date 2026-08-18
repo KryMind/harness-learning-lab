@@ -131,7 +131,7 @@ function LLabNode({ data }: NodeProps) {
   const icon = (data as { icon?: string }).icon
   return (
     <div
-      className={`llab-node kind-${kind}`}
+      className={`llab-node kind-${kind}${(data as { dimmed?: boolean }).dimmed ? ' dimmed' : ''}`}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
     >
@@ -178,45 +178,83 @@ interface GraphProps {
   edges: KGEdge[]
   onNodeClick?: (node: KGNode) => void
   height?: number
+  /** 节点抽屉打开时固定聚焦该节点，直到抽屉关闭 */
+  selectedNodeId?: string | null
+  /** 点击画布空白处（恢复全部关系） */
+  onPaneClick?: () => void
 }
 
-function GraphInner({ nodes, edges, onNodeClick, height }: GraphProps) {
+function GraphInner({ nodes, edges, onNodeClick, height, selectedNodeId, onPaneClick }: GraphProps) {
   const { isMobile } = useResponsive()
   const { theme } = useTheme()
+  const [hoverId, setHoverId] = useState<string | null>(null)
+  const [showAllLabels, setShowAllLabels] = useState(false)
   const positions = useMemo(() => layoutNodes(nodes, edges), [nodes, edges])
 
-  const rfNodes: Node[] = useMemo(
-    () =>
-      nodes.map((n) => ({
-        id: n.id,
-        type: 'llab',
-        position: positions.get(n.id) ?? { x: 0, y: 0 },
-        data: { ...n, label: n.label, kind: n.kind, brief: n.brief, icon: n.icon },
-      })),
-    [nodes, positions],
-  )
+  // 聚焦节点：抽屉选中的优先，其次为悬停节点
+  const activeId = selectedNodeId ?? hoverId
 
-  const rfEdges: Edge[] = useMemo(
-    () =>
-      edges.map((e) => ({
+  const rfNodes: Node[] = useMemo(() => {
+    const focusSet = new Set<string>()
+    if (activeId) {
+      focusSet.add(activeId)
+      edges.forEach((e) => {
+        if (e.from === activeId) focusSet.add(e.to)
+        if (e.to === activeId) focusSet.add(e.from)
+      })
+    }
+    return nodes.map((n) => ({
+      id: n.id,
+      type: 'llab',
+      position: positions.get(n.id) ?? { x: 0, y: 0 },
+      data: {
+        ...n,
+        label: n.label,
+        kind: n.kind,
+        brief: n.brief,
+        icon: n.icon,
+        // 聚焦时无关节点轻微降透明度（不隐藏）
+        dimmed: activeId != null && !focusSet.has(n.id),
+      },
+    }))
+  }, [nodes, positions, edges, activeId])
+
+  const rfEdges: Edge[] = useMemo(() => {
+    const isRelated = (e: KGEdge) => activeId != null && (e.from === activeId || e.to === activeId)
+    const isDimmed = (e: KGEdge) => activeId != null && !isRelated(e)
+    return edges.map((e) => {
+      const related = isRelated(e)
+      const showLabel = showAllLabels || related
+      return {
         id: e.id,
         source: e.from,
         target: e.to,
-        label: e.label,
+        type: 'smoothstep',
+        label: showLabel ? e.label : undefined,
         animated: e.animated !== false,
         dashed: e.dashed,
         style: {
           stroke: 'var(--primary)',
-          strokeOpacity: 0.65,
-          strokeWidth: e.dashed ? 1.2 : 1.6,
+          strokeOpacity: isDimmed(e) ? 0.1 : related ? 1 : 0.6,
+          strokeWidth: related ? (e.dashed ? 2.4 : 3) : e.dashed ? 1.2 : 1.6,
           strokeDasharray: e.dashed ? '5 4' : undefined,
         },
-        labelStyle: { fill: 'var(--text-3)', fontSize: 10, fontFamily: 'var(--mono)' },
-        labelBgStyle: { fill: 'var(--surface)', opacity: 0.85 },
+        labelStyle: {
+          fill: related ? 'var(--text)' : 'var(--text-3)',
+          fontSize: 11,
+          fontFamily: 'var(--mono)',
+        },
+        labelBgStyle: {
+          fill: 'var(--surface)',
+          stroke: 'var(--border-strong)',
+          strokeWidth: 1,
+        },
+        labelBgPadding: [4, 2] as [number, number],
+        labelBgBorderRadius: 5,
         markerEnd: { type: MarkerType.ArrowClosed, color: 'var(--primary)', width: 14, height: 14 },
-      })),
-    [edges],
-  )
+      }
+    })
+  }, [edges, activeId, showAllLabels])
 
   const handleClick: NodeMouseHandler = useCallback(
     (_e, node) => {
@@ -226,12 +264,20 @@ function GraphInner({ nodes, edges, onNodeClick, height }: GraphProps) {
     [nodes, onNodeClick],
   )
 
+  const handlePaneClick = useCallback(() => {
+    setHoverId(null)
+    onPaneClick?.()
+  }, [onPaneClick])
+
   return (
     <div className="graph-wrap" style={{ height: height ?? 520 }}>
       <ReactFlow
         nodes={rfNodes}
         edges={rfEdges}
         onNodeClick={handleClick}
+        onNodeMouseEnter={(_e, n) => setHoverId(n.id)}
+        onNodeMouseLeave={() => setHoverId(null)}
+        onPaneClick={handlePaneClick}
         nodeTypes={{ llab: LLabNode }}
         fitView
         fitViewOptions={{ padding: 0.18 }}
@@ -254,7 +300,16 @@ function GraphInner({ nodes, edges, onNodeClick, height }: GraphProps) {
           </div>
         ))}
       </div>
-      <div className="graph-tip">悬停查看简介 · 点击节点查看详情与源码</div>
+      <div className="graph-label-toggle">
+        <span className="tt">关系文字</span>
+        <button className={!showAllLabels ? 'on' : ''} onClick={() => setShowAllLabels(false)} aria-pressed={!showAllLabels}>
+          智能显示
+        </button>
+        <button className={showAllLabels ? 'on' : ''} onClick={() => setShowAllLabels(true)} aria-pressed={showAllLabels}>
+          全部显示
+        </button>
+      </div>
+      <div className="graph-tip">悬停/点击节点高亮关系 · 点击空白恢复 · 关系文字默认智能显示</div>
     </div>
   )
 }
